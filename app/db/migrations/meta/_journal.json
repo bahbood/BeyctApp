@@ -1,0 +1,55 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1779262561507,
+      "tag": "0000_wide_gateway",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1782381407792,
+      "tag": "0001_rare_toxin",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1782381698077,
+      "tag": "0002_lucky_ultimatum",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1782808803422,
+      "tag": "0003_stale_rhodey",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1782890247535,
+      "tag": "0004_steady_lord_tyger",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1782973881387,
+      "tag": "0005_kind_hellion",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1783493686394,
+      "tag": "0006_curvy_doctor_spectrum",
+      "breakpoints": true
+    }
+  ]
+}

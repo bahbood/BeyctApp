@@ -1,0 +1,1 @@
+ALTER TABLE "slides" ADD COLUMN "order" integer DEFAULT 0;

@@ -1,0 +1,51 @@
+{
+  "name": "base-web-app-nextjs",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "db:check": "drizzle-kit check",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "db:addSeed": "tsx ./app/db/seed.ts"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "dotenv": "^17.4.2",
+    "drizzle-orm": "^0.45.2",
+    "embla-carousel": "^8.6.0",
+    "embla-carousel-autoplay": "^8.6.0",
+    "embla-carousel-react": "^8.6.0",
+    "framer-motion": "^12.38.0",
+    "jalaali-js": "^1.1.0",
+    "jose": "^6.2.3",
+    "next": "^16.2.6",
+    "postgres": "^3.4.9",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "sharp": "^0.34.5",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/dotenv": "^6.1.1",
+    "@types/jalaali-js": "^1.1.1",
+    "@types/node": "^20",
+    "@types/pg": "^8.20.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "drizzle-kit": "^0.31.10",
+    "esbuild": "^0.28.1",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.6",
+    "pg": "^8.20.0",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "wrangler": "^4.114.0"
+  }
+}
