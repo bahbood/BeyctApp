@@ -3,7 +3,12 @@
 
 import sharp from 'sharp';
 import { randomUUID } from 'crypto';
+import path from 'path';
 
+const fontsDir = path.join(process.cwd(), 'app', 'fonts');
+process.env.FONTCONFIG_PATH = fontsDir;
+process.env.FONTCONFIG_FILE = path.join(fontsDir, 'fonts.conf');
+  
 // کش ساده سراسری (در محیط production از Redis استفاده کنید)
 const captchaStore = new Map<string, { text: string; expiresAt: number }>();
 
@@ -64,7 +69,7 @@ export async function createCaptchaImageAction(length: number = 5) {
   for (let i = 0; i < 10; i++) {
     backgroundText += chars.charAt(Math.floor(Math.random() * chars.length));
   }
-  
+ 
   // اضافه کردن حروف پس زمینه
   for (let i = 0; i < backgroundText.length; i++) {
     const hue = Math.random() * 360;
@@ -74,9 +79,9 @@ export async function createCaptchaImageAction(length: number = 5) {
     const fontSize = 38 + Math.random() * 4;
     
     svgString += `
-      <text x="${x}" y="${y}" font-size="${fontSize}" font-family="Arial" 
+      <text x="${x}" y="${y}" font-size="${fontSize}" font-family="DejaVu Sans Mono"
             fill="hsl(${hue}, 60%, 70%)" 
-            opacity="0.35"
+            opacity="0.45"
             transform="rotate(${rotate}, ${x}, ${y})">
         ${backgroundText[i]}
       </text>
@@ -95,10 +100,11 @@ export async function createCaptchaImageAction(length: number = 5) {
     const x = 15 + i * 40;
     const y = 30 + (Math.random() - 0.5) * 4;
     const rotate = (Math.random() - 0.5) * 28;
-    const fontSize = 26 + Math.random() * 4;
+    //const fontSize = 26 + Math.random() * 4;
+    const fontSize = 38 + Math.random() * 4;
     
     svgString += `
-      <text x="${x}" y="${y}" font-size="${fontSize}" font-family="Arial" 
+      <text x="${x}" y="${y}" font-size="${fontSize}" font-family="DejaVu Sans Mono" 
             fill="hsl(${hue}, 75%, 40%)" 
             font-weight="bold"
             opacity="0.9"
@@ -109,6 +115,7 @@ export async function createCaptchaImageAction(length: number = 5) {
   }
   
   svgString += `</svg>`;
+
   
   // تبدیل SVG به PNG
   const buffer = await sharp(Buffer.from(svgString))
@@ -132,25 +139,6 @@ export async function createCaptchaImageAction(length: number = 5) {
     image: image
   };
 }
-
-// تابع کمکی برای اعتبارسنجی کپچا (در اکشن لاگین استفاده می‌شود)
-// export async function verifyCaptcha(captchaId: string, userInput: string): Promise<boolean> {
-//   const captchaData = captchaStore.get(captchaId);
-  
-//   // اگر کپچا وجود نداشت یا منقضی شده بود
-//   if (!captchaData || captchaData.expiresAt < Date.now()) {
-//     if (captchaData) captchaStore.delete(captchaId);
-//     return false;
-//   }
-  
-//   // بررسی برابری (حساس به حروف بزرگ و کوچک)
-//   const isValid = captchaData.text.toLowerCase() === userInput.toLowerCase();
-  
-//   // یکبار مصرف - حذف از کش بعد از استفاده
-//   captchaStore.delete(captchaId);
-  
-//   return isValid;
-// }
 
 
 export async function verifyCaptcha(
