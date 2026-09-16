@@ -101,7 +101,7 @@ export async function createCaptchaImageAction(length: number = 5) {
     const y = 30 + (Math.random() - 0.5) * 4;
     const rotate = (Math.random() - 0.5) * 28;
     //const fontSize = 26 + Math.random() * 4;
-    const fontSize = 38 + Math.random() * 4;
+    const fontSize = 35 + Math.random() * 4;
     
     svgString += `
       <text x="${x}" y="${y}" font-size="${fontSize}" font-family="DejaVu Sans Mono" 

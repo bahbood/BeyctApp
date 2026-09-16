@@ -30,7 +30,7 @@ export default async function RootLayout({
 				
 					<FlyoutPageProvider initialUser={initialUser}>
 						
-						<HeaderCMP className="flex sticky header_height  top-0 z-2 items-center  bg-sky-500/30  backdrop-blur-sm border-b border-b-gray-400/30 
+						<HeaderCMP className="flex sticky header_height  top-0 z-2 items-center  bg-sky-500/70  backdrop-blur-sm border-b border-b-gray-400/30 
 						landscape:w-full  landscape:lg:px-20 landscape:px-5  shrink-0
 						portrait:w-full    portrait:px-4  " />
 					
@@ -40,7 +40,7 @@ export default async function RootLayout({
 						<footer className="w-full  shrink-0 pb-4 z-1">
 							<div className="w-full h-[300px] shrink-0 bg-gray-900"></div>
 						</footer>
-						<div className="fixed top-0 w-full h-[50%]   bg-linear-180 from-sky-600  to-white -z-1"></div>
+						{/* <div className="fixed top-0 w-full h-[50%]   bg-linear-180 from-sky-600  to-white -z-1"></div> */}
 					</FlyoutPageProvider>
 				
 				

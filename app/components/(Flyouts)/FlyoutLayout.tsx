@@ -64,7 +64,7 @@ const menuVariants = {
 
             >
               <div id="RC" className="flex flex-col items-center justify-around landscape:w-4/12 portrait:hidden h-full bg-sky-600 pt-5">
-                  <Image className="w-[50%]   " width={200} height={350} src="/logo/manaMode-V-2035-0.png" alt={"logo V"} ></Image>
+                  <Image className="w-[70%]   " width={200} height={350} src="/logo/Bey-Logo-new-05-white.svg" alt={"logo V"} ></Image>
                   <div className="w-full">
                     <span className="text-white block w-full text-center">www.ManaMode.ir</span>
                   </div>
@@ -83,7 +83,7 @@ const menuVariants = {
                     <path d="M541.36 1056.22l614.33 614.32c64.32,64.29 64.32,169.19 0,233.47l-16.49 16.49c-64.29,64.31 -169.17,64.31 -233.48,0.02l-864.3 -864.3c-27.3,-27.31 -27.3,-71.85 0,-99.15l864.3 -864.3c64.31,-64.29 169.19,-64.29 233.48,0.01l16.49 16.48c64.32,64.3 64.32,169.2 0,233.48l-614.33 614.33c-27.3,27.3 -27.3,71.84 0,99.15z" />
                     <path d="M992.07 829.89l784.51 0c90.27,0 165.09,74.82 165.09,165.09l0 23.33c0,90.26 -74.16,165.09 -165.09,165.09l-784.51 0c-90.92,0 -165.09,-74.17 -165.09,-165.09l0 -23.33c0,-90.93 75.49,-165.09 165.09,-165.09z" />
                   </svg>
-                   <Image className="w-[90px] landscape:hidden  " width={600} height={200} src="/logo/manamodeLine2-1.png" alt={"logo H"} ></Image>
+                   <Image className="w-[70px] landscape:hidden  " width={600} height={200} src="/logo/Bey-Logo-new-05-white.svg" alt={"logo H"} ></Image>
 
 
                 </div>

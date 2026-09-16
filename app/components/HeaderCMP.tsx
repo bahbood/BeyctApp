@@ -17,7 +17,7 @@ export default function HeaderCMP( {className}: {className?: string} ) {
         <div className={`${className}  `}>
            
             <div className=" w-3/4  h-full flex items-center p-0 m-0 ">
-                <Image className="w-[100px]  " width={700} height={200} src="/logo/manaModeLine-7020-0.png" alt={"logo"} ></Image>
+                <Image className="w-[70px]  " width={700} height={700} src="/logo/Bey-Logo-new-05-white.svg" alt={"logo"} ></Image>
                 <HeaderIconsCMP className="landscape:flex portrait:hidden  ms-5"/>
             </div>
             <div dir="ltr" className=" w-1/4  h-full flex items-center  ">
