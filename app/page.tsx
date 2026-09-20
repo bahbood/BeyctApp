@@ -10,8 +10,8 @@ export default async function Home() {
     <div id="Home" className="flex w-full  justify-center gap-5  mx-auto  py-2 portrait:py-3">
 
       <div id="R" className="landscape:w-[20%] portrait:hidden h-full flex-none ">
-        <div className="flex justify-center items-center w-full  overflow-hidden bg-gray-200  p-4" >
-         <Image className="w-[100%] " src="/logo/Bey-Logo-new-05.svg" width={200} height={350} alt={"logo"}></Image>
+        <div className="flex justify-center items-center w-full  overflow-hidden bg-gray-100  p-4" >
+         <Image className="w-[100%] " src="/logo/Bey-Logo-new-06-blue.svg" width={200} height={350} alt={"logo"}></Image>
         </div>
         
       </div>

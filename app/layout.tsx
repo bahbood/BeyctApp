@@ -30,7 +30,7 @@ export default async function RootLayout({
 				
 					<FlyoutPageProvider initialUser={initialUser}>
 						
-						<HeaderCMP className="flex sticky header_height  top-0 z-2 items-center  bg-sky-500/70  backdrop-blur-sm border-b border-b-gray-400/30 
+						<HeaderCMP className="flex sticky header_height  top-1 z-2 items-center  bg-gray-700/10  backdrop-blur-sm border-b border-b-gray-400/30 
 						landscape:w-full  landscape:lg:px-20 landscape:px-5  shrink-0
 						portrait:w-full    portrait:px-4  " />
 					
