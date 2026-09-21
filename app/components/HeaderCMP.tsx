@@ -17,7 +17,7 @@ export default function HeaderCMP( {className}: {className?: string} ) {
         <div className={`${className}  `}>
            
             <div className=" w-3/4  h-full flex items-center p-0 m-0 ">
-                <Image className="w-[70px]  " width={700} height={700} src="/logo/Bey-Logo-new-06-blue.svg" alt={"logo"} ></Image>
+                <Image className="w-[60px]  " width={700} height={700} src="/logo/Bey-Logo-new-06-blue.svg" alt={"logo"} ></Image>
                 <HeaderIconsCMP className="landscape:flex portrait:hidden  ms-5"/>
             </div>
             <div dir="ltr" className=" w-1/4  h-full flex items-center  ">
@@ -29,7 +29,7 @@ export default function HeaderCMP( {className}: {className?: string} ) {
                     <path d="M1.8989 16.1436l16.1362 0c0.6866,0 1.2485,0.7021 1.2485,1.5606l0 0.0001c0,0.8584 -0.5619,1.5605 -1.2485,1.5605l-16.1362 0c-0.6866,0 -1.2485,-0.7021 -1.2485,-1.5605l0 -0.0001c0,-0.8585 0.5619,-1.5606 1.2485,-1.5606z" />
                 </svg>
                 
-                <AuthenticationCMP className=" flex h-9  group justify-center items-center cursor-pointer bg-white/50  px-2 rounded-sm " />
+                <AuthenticationCMP className=" flex h-9  group justify-center items-center cursor-pointer bg-gray-500/10 hover:bg-gray-500/20  px-2 rounded-sm " />
                     
                 
 

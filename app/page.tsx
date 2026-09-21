@@ -11,7 +11,7 @@ export default async function Home() {
 
       <div id="R" className="landscape:w-[20%] portrait:hidden h-full flex-none ">
         <div className="flex justify-center items-center w-full  overflow-hidden bg-gray-100  p-4" >
-         <Image className="w-[100%] " src="/logo/Bey-Logo-new-06-blue.svg" width={200} height={350} alt={"logo"}></Image>
+         <Image className="w-[100%] " src="/logo/Bey-Logo-new-07-blue.svg" width={200} height={350} alt={"logo"}></Image>
         </div>
         
       </div>

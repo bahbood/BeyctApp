@@ -43,7 +43,7 @@ const menuVariants = {
       <AnimatePresence mode="wait">
         {isOpen && (
           <motion.div
-            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-xs flex justify-center items-center overscroll-none"
+            className="fixed inset-0 z-40 bg-black/20 backdrop-blur-xs flex justify-center items-center overscroll-none"
             onClick={(e) => e.stopPropagation()}
             variants={backdropVariants}
             initial="hidden"
@@ -64,9 +64,9 @@ const menuVariants = {
 
             >
               <div id="RC" className="flex flex-col items-center justify-around landscape:w-4/12 portrait:hidden h-full bg-sky-600 pt-5">
-                  <Image className="w-[70%]   " width={200} height={350} src="/logo/Bey-Logo-new-05-white.svg" alt={"logo V"} ></Image>
+                  <Image className="w-[70%]   " width={200} height={350} src="/logo/Bey-Logo-new-07-lightgray.svg" alt={"logo V"} ></Image>
                   <div className="w-full">
-                    <span className="text-white block w-full text-center">www.ManaMode.ir</span>
+                    <span className="text-white block w-full text-center">www.Bey-ct.ir</span>
                   </div>
               </div>
 
@@ -76,8 +76,8 @@ const menuVariants = {
                  
                   <svg xmlns="http://www.w3.org/2000/svg" width="20mm" height="20mm" version="1.1" viewBox="0 0 2000 2000"
                     className=' size-7  cursor-pointer duration-300 transition-colors
-                      landscape:fill-sky-900 landscape:hover:fill-orange-500
-                      portrait:fill-sky-100 portrait:hover:fill-orange-500 '
+                      landscape:fill-sky-800 landscape:hover:fill-orange-500
+                      portrait:fill-sky-800 portrait:hover:fill-orange-500 '
                     onClick={onCloseMe}
                   >
                     <path d="M541.36 1056.22l614.33 614.32c64.32,64.29 64.32,169.19 0,233.47l-16.49 16.49c-64.29,64.31 -169.17,64.31 -233.48,0.02l-864.3 -864.3c-27.3,-27.31 -27.3,-71.85 0,-99.15l864.3 -864.3c64.31,-64.29 169.19,-64.29 233.48,0.01l16.49 16.48c64.32,64.3 64.32,169.2 0,233.48l-614.33 614.33c-27.3,27.3 -27.3,71.84 0,99.15z" />
