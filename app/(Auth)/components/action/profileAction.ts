@@ -8,6 +8,7 @@ import { users } from '@/app/db/schema'
 import { createSession, decryptSession } from '../../lib/session'
 import { cookies } from 'next/headers'
 import { logined_User_Info } from '@/app/components/(Flyouts)/(Provider)/FlyoutPageContextProvider'
+import { fa } from 'zod/locales'
 
 export type ProfileState = {
   success: boolean
@@ -15,43 +16,59 @@ export type ProfileState = {
   errors?: {
     name?: string
     family?: string
-    mobile?: string
     email?: string
     userCaptcha?: string
     message?: string
+    publicError?: string
   }
   values?: {
     name: string
     family: string
-    mobile: string
     email: string
-    avatar: string
   }
 } | null
 
 export async function ProfileAction(prevState: ProfileState, formData: FormData): Promise<ProfileState> {
   const name = formData.get('name') as string
   const family = formData.get('family') as string
-  const mobile = formData.get('mobile') as string
+  //const mobile = formData.get('mobile') as string
   const email = formData.get('email') as string
   const captchaId = formData.get('captchaId') as string
   const userCaptchaInput = formData.get('userCaptchaInput') as string
 
-  const errors: Record<string, string> = {}
-  if (!name || name.trim().length < 2) errors.name = 'نام باید حداقل ۲ کاراکتر باشد'
-  if (!family || family.trim().length < 2) errors.family = 'نام خانوادگی باید حداقل ۲ کاراکتر باشد'
-  if (!mobile || !/^09\d{9}$/.test(mobile)) errors.mobile = 'شماره موبایل ۱۱ رقمی و با ۰۹ شروع شود'
-  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = 'ایمیل را بدرستی وارد کنید'
 
-  const values = { name: name || '', family: family || '', mobile: mobile || '', email: email || '', avatar: '' }
+  // 2. اعتبارسنجی اولیه
+
+   const name_validation: boolean =  name.trim().length < 2
+   const family_validation: boolean = family.trim().length < 2
+   const eamil_validation: boolean = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+   const userCaptchaInput_validation: boolean = /^[ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789]{5}$/.test(userCaptchaInput)
+   
+ 
+if( !name_validation || !family_validation || !eamil_validation || !userCaptchaInput_validation )
+{
+  return{
+    success:false,
+    errors:{
+      name : name_validation ? "نام  باید بیشتر از 2 حرف باشد ." : undefined ,
+      family : family_validation ? "نام خانوادگی باید بیشتر از 2 حرف باشد ." : undefined ,
+      email : eamil_validation ? "ایمیل دارای فرمت معتبر نیست ." : undefined ,
+      userCaptcha : userCaptchaInput_validation ? "کد امنیتی  وارد نشده ." : undefined ,
+      publicError: captchaId!="" ? "اشکال فنی و یا مداخله  در ارسال مقادیر به سرور - با مدیریت سایت تماس بگیرید ." : undefined,
+
+    }
+  }
+}
+
+  const errors: Record<string, string> = {}
+  
+
+  const values = { name: name || '', family: family || '',   email: email || '', avatar: '' }
 
   if (Object.keys(errors).length > 0) {
     return { success: false, errors, values }
   }
 
-  if (!captchaId || !userCaptchaInput) {
-    return { success: false, errors: { userCaptcha: 'کد امنیتی وارد نشده' }, values }
-  }
 
   const captchaResult = await captchaValidationAction(captchaId, userCaptchaInput)
   if (!captchaResult) {
@@ -76,7 +93,7 @@ export async function ProfileAction(prevState: ProfileState, formData: FormData)
     await db.update(users).set({
       name: name.trim(),
       family: family.trim(),
-      mobile_number: mobile.trim(),
+     // mobile_number: mobile.trim(),
       email: email.trim() || null,
     }).where(eq(users.id, userId))
 
@@ -88,7 +105,7 @@ export async function ProfileAction(prevState: ProfileState, formData: FormData)
       name.trim(),
       family.trim(),
       (payload.avatar as string) || '',
-      mobile.trim(),
+      "mobile",
       email.trim(),
       payload.store_active as boolean,
       payload.news_agency_active as boolean,

@@ -15,16 +15,22 @@ export async function sendSmsAction(mobile_number: string): Promise<SendSmsState
   }
 
   const code = generateSmsCode()
-
+  console.log("smsCodeReadyTosend : >>>>>>>>>> :", code)
   try {
-    await Send_SMS({
+    let result = await Send_SMS({
       mobile_number,
       message_text: `کد تایید شما: ${code}`,
       verify_code: code,
     })
 
-    setSmsCode(mobile_number, code)
-    console.log("@@@@@@: ", mobile_number , " ---> " , code );
+   if(result){
+      setSmsCode(mobile_number, code);
+      console.log(">>>>>>>> smsCodeSended : ", mobile_number , " >>>>>>>>>> sendedCode : " , code );
+    }
+      
+    
+
+    
     return { success: true, message: 'کد تایید با موفقیت ارسال شد.' }
   } catch (error) {
     console.error('Send SMS error:', error)

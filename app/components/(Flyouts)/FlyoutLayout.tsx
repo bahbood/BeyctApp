@@ -63,7 +63,7 @@ const menuVariants = {
               exit="exit"
 
             >
-              <div id="RC" className="flex flex-col items-center justify-around landscape:w-4/12 portrait:hidden h-full bg-sky-600 pt-5">
+              <div id="RC" className="flex flex-col items-center justify-around landscape:w-4/12 portrait:hidden h-full bg-baseColor pt-5">
                   <Image className="w-[70%]   " width={200} height={350} src="/logo/Bey-Logo-new-07-lightgray.svg" alt={"logo V"} ></Image>
                   <div className="w-full">
                     <span className="text-white block w-full text-center">www.Bey-ct.ir</span>

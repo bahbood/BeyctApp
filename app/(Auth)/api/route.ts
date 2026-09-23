@@ -37,7 +37,7 @@ export async function Send_SMS({
   message_text: string;
   verify_code: string;
 }) {
-  const apiKey = process.env.SMS_API_KEY;
+  const apiKey = process.env.SMS_API_KEY_sandBox;
   const lineNumber = process.env.SMS_LINE_NUMBER;
 
   if (!apiKey) {
@@ -68,12 +68,15 @@ export async function Send_SMS({
   );
 
   const result = await response.json();
-
-  if (!response.ok) {
-    throw new Error(result.message ?? "پیامک ارسال نشد.");
+//console.log( "------------- sms :" , mobile_number , " - " , result )
+  if (response.ok){
+    return true;
+  }else {
+    throw new Error(result.message ?? " sms server : SMS not send .... ");
   }
 
-  return result;
+
+  
 }
 
 

@@ -100,12 +100,9 @@ export default function Profile( {ref }: {ref?:Ref<ProfileHandlerRef>} ) {
                           <div className="flex flex-col w-[95%] sm:w-[85%] gap-1">
                               <div className="flex w-full ">
                                   <label className="text-right text-[10px] pr-2">تلفن همراه:</label>
-                                  {state?.errors?.mobile && (
-                                      <label className="text-right text-[10px] pr-2 text-red-600">{state?.errors?.mobile}</label>
-                                  )}
                               </div>
                               <input id="mobile"  type="text"  dir="ltr"
-                                  readOnly  defaultValue={user?.mobile || state?.values?.mobile || ""}
+                                  readOnly  defaultValue={user?.mobile ||  ""}
                                   className="block w-full rounded-md px-3 pt-3 pb-2 text-xs outline-1 outline-gray-300"
                               />
                           </div>
