@@ -8,7 +8,6 @@ import { users } from '@/app/db/schema'
 import { createSession, decryptSession } from '../../lib/session'
 import { cookies } from 'next/headers'
 import { logined_User_Info } from '@/app/components/(Flyouts)/(Provider)/FlyoutPageContextProvider'
-import { fa } from 'zod/locales'
 
 export type ProfileState = {
   success: boolean
@@ -18,7 +17,7 @@ export type ProfileState = {
     family?: string
     email?: string
     userCaptcha?: string
-    message?: string
+   
     publicError?: string
   }
   values?: {
@@ -29,45 +28,42 @@ export type ProfileState = {
 } | null
 
 export async function ProfileAction(prevState: ProfileState, formData: FormData): Promise<ProfileState> {
-  const name = formData.get('name') as string
-  const family = formData.get('family') as string
-  //const mobile = formData.get('mobile') as string
-  const email = formData.get('email') as string
-  const captchaId = formData.get('captchaId') as string
-  const userCaptchaInput = formData.get('userCaptchaInput') as string
+ const name = String(formData.get('name') ?? '').trim();
+const family = String(formData.get('family') ?? '').trim();
+const email = String(formData.get('email') ?? '').trim();
+const captchaId = String(formData.get('captchaId') ?? '').trim();
+const userCaptchaInput = String(formData.get('userCaptchaInput') ?? '').trim();
 
 
   // 2. اعتبارسنجی اولیه
 
-   const name_validation: boolean =  name.trim().length < 2
-   const family_validation: boolean = family.trim().length < 2
+   const name_validation: boolean =  /^[\p{L}\p{M}\s]{2,20}$/u.test(name.trim());
+   const family_validation: boolean = /^[\p{L}\p{M}\s]{2,25}$/u.test(family.trim());
    const eamil_validation: boolean = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
    const userCaptchaInput_validation: boolean = /^[ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789]{5}$/.test(userCaptchaInput)
    
  
-if( !name_validation || !family_validation || !eamil_validation || !userCaptchaInput_validation )
+if( !name_validation || !family_validation || !eamil_validation || !userCaptchaInput_validation || !captchaId)
 {
   return{
     success:false,
     errors:{
-      name : name_validation ? "نام  باید بیشتر از 2 حرف باشد ." : undefined ,
-      family : family_validation ? "نام خانوادگی باید بیشتر از 2 حرف باشد ." : undefined ,
-      email : eamil_validation ? "ایمیل دارای فرمت معتبر نیست ." : undefined ,
-      userCaptcha : userCaptchaInput_validation ? "کد امنیتی  وارد نشده ." : undefined ,
-      publicError: captchaId!="" ? "اشکال فنی و یا مداخله  در ارسال مقادیر به سرور - با مدیریت سایت تماس بگیرید ." : undefined,
+      name : !name_validation ? "نام باید بین ۲ تا ۲۰ حرف باشد." : undefined ,
+      family : !family_validation ? "نام خانوادگی باید بین ۲ تا ۲۵ حرف باشد." : undefined ,
+      email : !eamil_validation ? "ایمیل دارای فرمت معتبر نیست ." : undefined ,
+      userCaptcha : !userCaptchaInput_validation ? "کد امنیتی  وارد نشده ." : undefined ,
+      publicError: !captchaId ? "اشکال فنی و یا مداخله  در ارسال مقادیر به سرور - با مدیریت سایت تماس بگیرید ." : undefined,
 
     }
   }
 }
 
-  const errors: Record<string, string> = {}
+  
   
 
-  const values = { name: name || '', family: family || '',   email: email || '', avatar: '' }
+  const values = { name: name || '', family: family || '',   email: email || '', }
 
-  if (Object.keys(errors).length > 0) {
-    return { success: false, errors, values }
-  }
+  
 
 
   const captchaResult = await captchaValidationAction(captchaId, userCaptchaInput)
@@ -78,16 +74,24 @@ if( !name_validation || !family_validation || !eamil_validation || !userCaptchaI
   const cookieStore = await cookies()
   const sessionCookie = cookieStore.get('session')?.value
   if (!sessionCookie) {
-    return { success: false, errors: { message: 'کاربر وارد سیستم نیست' }, values }
+    return { success: false, errors: { publicError: 'کاربر وارد سیستم نیست' }, values }
   }
 
   const payload = await decryptSession(sessionCookie)
   if (!payload) {
     console.log(payload)
-    return { success: false, errors: { message: 'نشست نامعتبر' }, values }
+    return { success: false, errors: { publicError: 'نشست نامعتبر' }, values }
   }
 
-  const userId = Number(payload.userId)
+ const userId = Number(payload.userId)
+
+if (!Number.isInteger(userId) || userId <= 0) {
+  return {
+    success: false,
+    errors: { publicError: 'شناسه کاربر نامعتبر است.' },
+    values,
+  }
+}
 
   try {
     await db.update(users).set({
@@ -105,7 +109,7 @@ if( !name_validation || !family_validation || !eamil_validation || !userCaptchaI
       name.trim(),
       family.trim(),
       (payload.avatar as string) || '',
-      "mobile",
+      payload.mobile as string,
       email.trim(),
       payload.store_active as boolean,
       payload.news_agency_active as boolean,
@@ -113,7 +117,7 @@ if( !name_validation || !family_validation || !eamil_validation || !userCaptchaI
     )
 
     if (!sessionResult.success) {
-      return { success: false, errors: { message: 'خطا در به‌روزرسانی نشست' }, values }
+      return { success: false, errors: { publicError: 'خطا در به‌روزرسانی نشست' }, values }
     }
 
     return {
@@ -122,6 +126,6 @@ if( !name_validation || !family_validation || !eamil_validation || !userCaptchaI
     }
   } catch (error) {
     console.error('Profile update error:', error)
-    return { success: false, errors: { message: 'خطا در ارتباط با سرور' }, values }
+    return { success: false, errors: { publicError: 'خطا در ارتباط با سرور' }, values }
   }
 }

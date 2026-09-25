@@ -63,9 +63,10 @@ function RegisterForm() {
   }, [state])
 
   const messageBoxShowRef = useRef(messageBox_show)
-  useEffect(() => {
-    messageBoxShowRef.current = messageBox_show
-  })
+
+useEffect(() => {
+  messageBoxShowRef.current = messageBox_show
+}, [messageBox_show])
 
   useEffect(() => {
     if (state?.success === true) {

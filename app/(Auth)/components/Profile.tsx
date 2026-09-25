@@ -8,7 +8,6 @@ import FlyoutLayout from "@/app/components/(Flyouts)/FlyoutLayout"
 import { flyoutPageEnum, useFlyoutPage } from "@/app/components/(Flyouts)/(Provider)/FlyoutPageContextProvider"
 import { ProfileAction, ProfileState } from "./action/profileAction"
 import CaptchaCMP, { CaptchaHandler } from "@/app/components/(captcha)/Captcha_CMP"
-import Captcha_InputCMP from "@/app/components/(captcha)/captcha_Input_CMP"
 import SplitInput from "@/app/components/(captcha)/Split_InputCMP"
 
 export interface ProfileHandlerRef{
@@ -19,13 +18,15 @@ export interface ProfileHandlerRef{
 
 
 export default function Profile( {ref }: {ref?:Ref<ProfileHandlerRef>} ) {
-  const { setUser, user , CloseMe_and_Open} = useFlyoutPage()
+  const { setUser, user , CloseMe_and_Open , messageBox_show} = useFlyoutPage()
     const[isOpen , setIsOpen]=useState(false)
+  const [formKey, setFormKey] = useState(0)
   
     useImperativeHandle(ref , ()=>({
       openMe :()=>{setIsOpen(true)},
-      closeMe :()=>{setIsOpen(false)},
-      ToggleShow:()=>{ setIsOpen(!isOpen) }
+       closeMe :()=>{setIsOpen(false); setFormKey(k => k + 1)},
+       ToggleShow: () => {setIsOpen(prev => !prev)},
+  
     }))
   
    const captchaRef = useRef<CaptchaHandler>(null)
@@ -35,11 +36,35 @@ export default function Profile( {ref }: {ref?:Ref<ProfileHandlerRef>} ) {
 
   
   const router = useRouter()
+   const messageBoxShowRef = useRef(messageBox_show)
+
+useEffect(() => {
+  messageBoxShowRef.current = messageBox_show
+}, [messageBox_show])
+
     useEffect(() => {
        if (state?.success === true) {
-      if (state.user) setUser(state.user)
-      router.refresh()
-      setIsOpen(false)
+            if (state.user){ setUser(state.user)}
+           
+           messageBoxShowRef.current(
+  "پروفایل",
+  [
+    "اطلاعات پروفایل با موفقیت به‌روزرسانی شد.",
+  ],
+  "success"
+)
+            router.refresh()
+            setIsOpen(false)
+        }else if (state?.success === false ){
+           let errorMessage: string[] = [];
+           state.errors?.name && (errorMessage.push(state.errors?.name))
+           state.errors?.family && (errorMessage.push(state.errors?.family))
+           state.errors?.userCaptcha && (errorMessage.push(state.errors?.userCaptcha))
+           state.errors?.email && (errorMessage.push(state.errors?.email))
+           state.errors?.publicError && (errorMessage.push(state.errors?.publicError))
+
+
+           messageBoxShowRef.current("خطا", errorMessage, "error")
         }
 
     }, [state, router, setUser])
@@ -52,7 +77,7 @@ export default function Profile( {ref }: {ref?:Ref<ProfileHandlerRef>} ) {
     }, [state])
 
   const closeMe=()=>{
-    
+    setFormKey(k => k + 1);
     setIsOpen(!isOpen);
     
   }
@@ -68,17 +93,17 @@ export default function Profile( {ref }: {ref?:Ref<ProfileHandlerRef>} ) {
                   <hr className="w-[99%] text-gray-200 shrink-0" />
                   
                   <div id="form" className="flex flex-col w-full flex-1 min-h-0 items-center overflow-y-auto ">
-                        <form action={formAction} className="flex flex-col   items-center landscape:w-xs portrait:w-full text-slate-800 gap-2">
+                        <form action={formAction} key={formKey} className="flex flex-col   items-center landscape:w-xs portrait:w-full text-slate-800 gap-2">
                           {/* name ----------- */}
                           <div className="flex flex-col w-[95%] sm:w-[85%] gap-1">
                               <div className="flex w-full ">
                                   <label className="text-right text-[10px] pr-2">نام  :</label>
                                   {state?.errors?.name && (
-                                      <label className="text-right text-[10px] pr-2 text-red-600">{state?.errors?.name}</label>
+                                      <div className=" h-2 w-2  bg-red-600 rounded-full"></div>
                                   )}
                               </div>
                               <input id="name" name="name" type="text" placeholder="نام" dir="rtl"
-                                  required autoFocus defaultValue={user?.name || state?.values?.name || ""}
+                                  required autoFocus defaultValue={state?.values?.name ?? user?.name ?? ""}
                                   className="block w-full rounded-md px-3 pt-3 pb-2 text-xs outline-1 outline-gray-300"
                               />
                           </div>
@@ -87,11 +112,11 @@ export default function Profile( {ref }: {ref?:Ref<ProfileHandlerRef>} ) {
                               <div className="flex w-full ">
                                   <label className="text-right text-[10px] pr-2">نام خانوادگی  :</label>
                                   {state?.errors?.family && (
-                                      <label className="text-right text-[10px] pr-2 text-red-600">{state?.errors?.family}</label>
+                                      <div className=" h-2 w-2  bg-red-600 rounded-full"></div>
                                   )}
                               </div>
                               <input id="family" name="family" type="text" placeholder="نام خانوادگی" dir="rtl"
-                                  required  defaultValue={user?.family || state?.values?.family || ""}
+                                  required  defaultValue={state?.values?.family ?? user?.family ?? ""}
                                   className="block w-full rounded-md px-3 pt-3 pb-2 text-xs outline-1 outline-gray-300"
                               />
                           </div>
@@ -112,11 +137,11 @@ export default function Profile( {ref }: {ref?:Ref<ProfileHandlerRef>} ) {
                               <div className="flex w-full ">
                                   <label className="text-right text-[10px] pr-2"> رایانامه ( ایمیل ):</label>
                                   {state?.errors?.email && (
-                                      <label className="text-right text-[10px] pr-2 text-red-600">{state?.errors?.email}</label>
+                                      <div className=" h-2 w-2  bg-red-600 rounded-full"></div>
                                   )}
                               </div>
                               <input id="email" name="email" type="text" placeholder="email" dir="ltr"
-                                  required  defaultValue={user?.email || state?.values?.email || ""}
+                                  required  defaultValue={state?.values?.email ?? user?.email ?? ""}
                                   className="block w-full rounded-md px-3 pt-3 pb-2 text-xs outline-1 outline-gray-300"
                               />
                           </div>
@@ -142,7 +167,7 @@ export default function Profile( {ref }: {ref?:Ref<ProfileHandlerRef>} ) {
                               <div className="flex w-full">
                                   <label className="text-right text-[10px] pr-2">کد امنیتی :</label>
                                   {state?.errors?.userCaptcha && (
-                                      <label className="text-right text-[10px] pr-2 text-red-600">{state?.errors?.userCaptcha}</label>
+                                      <div className=" h-2 w-2  bg-red-600 rounded-full"></div>
                                   )}
                               </div>
 
@@ -152,14 +177,7 @@ export default function Profile( {ref }: {ref?:Ref<ProfileHandlerRef>} ) {
                               </div>
 
                           </div>
-                          {/* message place ---------- */}
-                          <div className="flex py-1 mt-4">
-                              {state?.errors?.message && (
-                                  <pre className="w-full text-red-700 text-[10px] text-right">
-                                      {state.errors?.message}
-                                  </pre>
-                              )}
-                          </div>
+                         
                           {/* submit button ---------- */}
                           <div className="flex w-[95%] sm:w-[85%] gap-2 mt-1 text-sm">
                               <button

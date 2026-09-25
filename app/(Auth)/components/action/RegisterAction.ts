@@ -60,12 +60,12 @@ export type RegisterState = {
      return {
          success: false,
          errors:{
-        userName: userName_validation ? "نام کاربری : باید حداقل داری 5 کاراکتر  شامل حروف لاتین ، اعداد ، زیر خط و علامت های @#$%^& باشد ." : undefined,
-        passWord: password_validation ? "گذرواژه : باید  حداقل 5 حرف شامل حداقل  یک حرف کوچک -- حداقل یک حرف بزرگ و  حداقل یک  از نشانه های   @ # $ % ^ &  باشد . " : undefined,
-        mobile_number:mobile_validation ? " شماره همراه : بدرستی وارد نشده است ." :undefined ,
-        userCaptcha: userCaptchaInput_validation ? "کد امنیتی : بدرستی وارد نشده و یا خالی است ." : undefined,
-        sms_code: sms_code_validation ? "کد تایید پیامکی : بدرستی وارد نشده است ." : undefined,
-        publicError: captchaId!="" ? "اشکال فنی و یا مداخله  در ارسال مقادیر به سرور - با مدیریت سایت تماس بگیرید ." : undefined,
+        userName: !userName_validation ? "نام کاربری : باید حداقل داری 5 کاراکتر  شامل حروف لاتین ، اعداد ، زیر خط و علامت های @#$%^& باشد ." : undefined,
+        passWord: !password_validation ? "گذرواژه : باید  حداقل 5 حرف شامل حداقل  یک حرف کوچک -- حداقل یک حرف بزرگ و  حداقل یک  از نشانه های   @ # $ % ^ &  باشد . " : undefined,
+        mobile_number:!mobile_validation ? " شماره همراه : بدرستی وارد نشده است ." :undefined ,
+        userCaptcha: !userCaptchaInput_validation ? "کد امنیتی : بدرستی وارد نشده و یا خالی است ." : undefined,
+        sms_code: !sms_code_validation ? "کد تایید پیامکی : بدرستی وارد نشده است ." : undefined,
+        publicError: !captchaId ? "اشکال فنی و یا مداخله  در ارسال مقادیر به سرور - با مدیریت سایت تماس بگیرید ." : undefined,
         
       },
          
