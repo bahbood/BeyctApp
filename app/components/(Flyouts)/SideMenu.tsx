@@ -41,9 +41,9 @@ export interface SideMenuHandlerRef{
 
 export default function SideMenu({ref }: {ref?:Ref<SideMenuHandlerRef>}) {
 
-//  const {sideMenu:{ menu_isOpen, menuClose }} = useFlyoutPage()
+const {logInPage_toggleShow,logOutPage_toggleShow ,ProfilePage_toggleShow,RegisterPage_toggleShow, user } = useFlyoutPage()
   const currentPath = usePathname();
-  const { user } = useFlyoutPage();
+ // const { user } = useFlyoutPage();
 
   const[isOpen , setIsOpen]=useState(false)
 
@@ -52,6 +52,8 @@ export default function SideMenu({ref }: {ref?:Ref<SideMenuHandlerRef>}) {
     closeMe :()=>{setIsOpen(false)},
     ToggleShow:()=>{ setIsOpen(!isOpen) }
   }))
+
+  
 
   return (
     <AnimatePresence>
@@ -231,7 +233,43 @@ export default function SideMenu({ref }: {ref?:Ref<SideMenuHandlerRef>}) {
               </div>
               )}
 
-             
+             {user && (
+              <div className=' w-full  bg-gray-200'>
+                <label className='block w-full px-2 py-2 bg-sky-300 text-white  text-xs'>لینک های کاربران سایت  :</label>
+                <div className='flex flex-col w-full mx-auto gap-3 px-3 py-2  '>
+                  {user?.serviceman_active==false && 
+                    <Link className='text-xs hover:text-orange-600' href='/' onClick={()=>setIsOpen(false)} >درخواست فعال سازی خدمات و مشاغل</Link>
+                  }
+                   {user?.news_agency_active==false && 
+                      <Link className='text-xs hover:text-orange-600' href='/' onClick={()=>setIsOpen(false)}> درخواست فعال سازی خبرگزاری </Link>
+                  }
+                  {user?.store_active==false && 
+                     <Link className='text-xs hover:text-orange-600' href='/' onClick={()=>setIsOpen(false)} >درخواست فعال سازی فروشگاه</Link>
+                  }
+                </div>
+              </div>
+              )}
+
+ {/* لینک های عمومی */}
+               <div className=' w-full  bg-gray-200'>
+                <label className='block w-full px-2 py-2 bg-sky-300 text-white  text-xs'> لینک های عمومی :</label>
+                <div className='flex flex-col w-full mx-auto gap-3 px-3 py-2  '>
+                 {!user &&(
+<>
+                    <span className='text-xs hover:text-orange-600 cursor-pointer'  onClick={()=>logInPage_toggleShow()} >ورود کاربران</span>
+                    <span className='text-xs hover:text-orange-600 cursor-pointer' onClick={()=>RegisterPage_toggleShow()} >ثبت نام و عضویت در سایت </span>
+</>
+                 )}
+
+                  {user &&(
+
+                    <span className='text-xs hover:text-orange-600 cursor-pointer' onClick={()=>logOutPage_toggleShow()} >خروج کاربران</span>
+
+                 )}
+                 
+                </div>
+              </div>
+
 
             </div>
           </motion.div>
