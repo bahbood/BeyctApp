@@ -244,7 +244,7 @@ const {logInPage_toggleShow,logOutPage_toggleShow ,ProfilePage_toggleShow,Regist
                       <Link className='text-xs hover:text-orange-600' href='/' onClick={()=>setIsOpen(false)}> درخواست فعال سازی خبرگزاری </Link>
                   }
                   {user?.store_active==false && 
-                     <Link className='text-xs hover:text-orange-600' href='/' onClick={()=>setIsOpen(false)} >درخواست فعال سازی فروشگاه</Link>
+                     <Link className='text-xs hover:text-orange-600' href='/storeActivation' onClick={()=>setIsOpen(false)} >درخواست فعال سازی فروشگاه</Link>
                   }
                 </div>
               </div>
