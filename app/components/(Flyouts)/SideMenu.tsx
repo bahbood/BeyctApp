@@ -237,15 +237,16 @@ const {logInPage_toggleShow,logOutPage_toggleShow ,ProfilePage_toggleShow,Regist
               <div className=' w-full  bg-gray-200'>
                 <label className='block w-full px-2 py-2 bg-sky-300 text-white  text-xs'>لینک های کاربران سایت  :</label>
                 <div className='flex flex-col w-full mx-auto gap-3 px-3 py-2  '>
+                  {user?.store_active==false && 
+                     <Link className='text-xs hover:text-orange-600' href='/myStore' onClick={()=>setIsOpen(false)} >مدیریت فروشگاه - درخواست فعال سازی</Link>
+                  }
                   {user?.serviceman_active==false && 
                     <Link className='text-xs hover:text-orange-600' href='/' onClick={()=>setIsOpen(false)} >درخواست فعال سازی خدمات و مشاغل</Link>
                   }
                    {user?.news_agency_active==false && 
                       <Link className='text-xs hover:text-orange-600' href='/' onClick={()=>setIsOpen(false)}> درخواست فعال سازی خبرگزاری </Link>
                   }
-                  {user?.store_active==false && 
-                     <Link className='text-xs hover:text-orange-600' href='/storeActivation' onClick={()=>setIsOpen(false)} >درخواست فعال سازی فروشگاه</Link>
-                  }
+                  
                 </div>
               </div>
               )}

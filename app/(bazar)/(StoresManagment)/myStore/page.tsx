@@ -3,6 +3,7 @@ import { stores } from '@/app/db/schema'
 import { eq } from 'drizzle-orm'
 import {  getUserFromSession } from '@/app/(Auth)/lib/session'
 import ActivationForm from './ActivationForm'
+import AddNewStoreForm from './AddNewStoreForm'
 export const dynamic = 'force-dynamic'
 
 
@@ -28,19 +29,19 @@ export default async function StoreActivationPage() {
   const store = await getStoreByUserId(userId)
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="w-full min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm border-b">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
-          <a href="/" className="text-sm text-gray-500 hover:text-gray-700">خانه</a>
-          <h2 className="text-sm font-bold text-gray-700">فعالسازی فروشگاه</h2>
+        <div className="w-full mx-auto px-4 py-3 flex items-center justify-between">
+          <h2 className="text-sm font-bold text-gray-700">در خواست تاسیس و فعال سازی فروشگاه </h2>
         </div>
       </header>
-      <main className="max-w-2xl mx-auto px-4 py-6">
+      <main className="w-full mx-auto px-4 py-6">
         {!store ? (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 flex flex-col items-center gap-3 text-gray-500">
             <span className="text-4xl">🏪</span>
             <p className="text-sm">شما فروشگاه ثبت شده‌ای ندارید</p>
             <p className="text-xs text-gray-400">برای استفاده از این بخش باید ابتدا فروشگاه خود را ثبت کنید</p>
+            <AddNewStoreForm ></AddNewStoreForm>
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex flex-col gap-4">

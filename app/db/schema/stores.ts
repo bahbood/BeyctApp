@@ -10,15 +10,14 @@ export const stores = pgTable('stores', {
   //این فیلد منحصرا برای مدیر فروشگاه برای دیده شدن یا نشدن فروشگاه در نظر گرفته شده
   on_air:boolean('on_air').default(false),
   
-  store_name:   varchar('store_name', { length: 50 }).notNull().unique(),
-  store_desc:   varchar('store_desc', { length: 500 }),
+  store_name:   varchar('store_name', { length: 30 }).notNull().unique(),
+  store_manager:varchar('store_manager', { length: 150 }).notNull(),
+  store_desc:   varchar('store_desc', { length: 200 }).notNull(),
   store_about:  varchar('store_about'),
 
-  store_manager:varchar('store_manager', { length: 150 }).notNull(),
-
   store_address: varchar('store_address', { length: 250 }),
-  store_tell:   varchar('store_tell', { length: 11 }).notNull(),
-  store_mobile: varchar('store_mobile', { length: 11 }).notNull(),
+  store_tell:   varchar('store_tell', { length: 11 }),
+  store_mobile: varchar('store_mobile', { length: 11 }),
   
   created_at:  timestamp('created_at').defaultNow().notNull(),
   updated_at:  timestamp('updated_at').defaultNow().notNull(),
