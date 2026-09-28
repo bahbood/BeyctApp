@@ -24,26 +24,26 @@ export default function AddNewStoreForm() {
   }, [state])
 
   return (
-    <form action={formAction} className="max-w-sm flex flex-col gap-3">
+    <form action={formAction} className="  ">
       
 
-      <div className="flex flex-col gap-2">
+      <div className="flex max-w-sm flex-col gap-3">
 
-        
+          <div className='flex items-center gap-3'>
               <label className="text-right text-[10px] pr-2"> نام فروشگاه:</label>
-              { state && (
-                  <div className=" h-2 w-2  bg-red-600 rounded-full"></div>
-              )}
+              { state && ( <div className=" h-2 w-2  bg-red-600 rounded-full"></div> )}
+          </div>
           <input id="store_name" name="store_name" type="text" placeholder="نام فروشگاه" dir="rtl"
               required maxLength={30}  defaultValue={""}
               className="block w-full rounded-md px-3 pt-3 pb-2 text-xs outline-1 outline-gray-300"
               //   حداکثر 30 کاراکتر   --  نام فروشگاه
           />
-
+<div className='flex items-center gap-3'>
            <label className="text-right text-[10px] pr-2"> نام و نام خانوادگی مدیر فروشگاه:</label>
               { state && (
                   <div className=" h-2 w-2  bg-red-600 rounded-full"></div>
               )}
+ </div>
           <input id="store_manager" name="store_manager" type="text"   placeholder="مدیریت فروشگاه" dir="rtl"
               required maxLength={150} defaultValue={ ""}
               className="block w-full rounded-md px-3 pt-3 pb-2 text-xs outline-1 outline-gray-300"
@@ -51,21 +51,23 @@ export default function AddNewStoreForm() {
           />
 
 
-
+<div className='flex items-center gap-3'>
            <label className="text-right text-[10px] pr-2"> تعریف کوتاه فروشگاه  :</label>
               { state && (
                   <div className=" h-2 w-2  bg-red-600 rounded-full"></div>
               )}
+              </div>
           <input id="store_desc" name="store_desc" type="text" placeholder="تعریف کوتاه" dir="rtl"
               required maxLength={200}  defaultValue={ ""}
               className="block w-full rounded-md px-3 pt-3 pb-2 text-xs outline-1 outline-gray-300"
               // حروف لاتین کوچک و بزرگ و اعداد و زیرخط و @#$%^& --- حداقل 5 و حداکثر 200 کاراکتر   --  تعریف کوتاه فروشگاه:
           />
-
+<div className='flex items-center gap-3'>
           <label className="text-right text-[10px] pr-2"> درباره فروشگاه ( اختیاری ):</label>
               { state && (
                   <div className=" h-2 w-2  bg-red-600 rounded-full"></div>
               )}
+              </div>
           <input id="store_about" name="store_about" type="text" placeholder="درباره فروشگاه" 
               maxLength={500}  defaultValue={""}
               className="block w-full rounded-md px-3 pt-3 pb-2 text-xs outline-1 outline-gray-300"
@@ -73,42 +75,46 @@ export default function AddNewStoreForm() {
           />
 
 
-
+<div className='flex items-center gap-3'>
           <label className="text-right text-[10px] pr-2"> آدرس ( اختیاری ):</label>
               { state && (
                   <div className=" h-2 w-2  bg-red-600 rounded-full"></div>
               )}
+              </div>
           <input id="store_address" name="store_address" type="text" placeholder=" آدرس" 
                maxLength={200} defaultValue={""}
               className="block w-full rounded-md px-3 pt-3 pb-2 text-xs outline-1 outline-gray-300"
           />
 
-
+<div className='flex items-center gap-3'>
           <label className="text-right text-[10px] pr-2">  تلفن ( اختیاری ):</label>
               { state && (
                   <div className=" h-2 w-2  bg-red-600 rounded-full"></div>
               )}
+              </div>
           <input id="store_tell" name="store_tell" type="text" placeholder=" تلفن" 
                defaultValue={ ""}
               className="block w-full rounded-md px-3 pt-3 pb-2 text-xs outline-1 outline-gray-300"
           />
 
-
+<div className='flex items-center gap-3'>
           <label className="text-right text-[10px] pr-2"> همراه ( اختیاری ) :</label>
               { state && (
                   <div className=" h-2 w-2  bg-red-600 rounded-full"></div>
               )}
+              </div>
           <input id="store_mobile" name="store_mobile" type="text" placeholder="همراه مدیر " 
                defaultValue={ ""}
               className="block w-full rounded-md px-3 pt-3 pb-2 text-xs outline-1 outline-gray-300"
           />
 
            
-
+<div className='flex w-2xs flex-col items-center gap-3'>
 
 
         <CaptchaCMP className="w-full flex" name="captchaId" ref={captchaRef} />
         <Captcha_InputCMP name="userCaptchaInput" />
+</div>
       </div>
       {state?.errors?.userCaptcha && (
         <span className="text-[10px] text-red-600">{state.errors.userCaptcha}</span>
