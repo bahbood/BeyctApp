@@ -5,6 +5,7 @@ import localFont from "next/font/local";
 import { FlyoutPageProvider } from "./components/(Flyouts)/(Provider)/FlyoutPageContextProvider";
 import HeaderCMP from "./components/HeaderCMP";
 import { getUserFromSession } from "./(Auth)/lib/session";
+import { getUnreadMessagesCount } from "./(Auth)/messages/lib/messagesDb";
 
 export const dynamic = 'force-dynamic';
 
@@ -24,13 +25,16 @@ export default async function RootLayout({
 }>) {
 	// ✅ دریافت اطلاعات کاربر از session
   const initialUser = await getUserFromSession();
+
+  // ✅ تعداد پیام های خوانده نشده برای نمایش نشانگر در هدر
+  const unreadMessagesCount = initialUser?.id ? await getUnreadMessagesCount(initialUser.id) : 0;
 	return (
 		<html lang="en" className="w-full bg-white">
 			<body dir="rtl" className={`${myFont.className} w-full antialiased relative `} >
 				
 					<FlyoutPageProvider initialUser={initialUser}>
 						
-						<HeaderCMP className="flex sticky header_height  top-1 z-2 items-center    backdrop-blur-sm border-b border-b-gray-400/10 
+						<HeaderCMP unreadMessagesCount={unreadMessagesCount} className="flex sticky header_height  top-1 z-2 items-center    backdrop-blur-sm border-b border-b-gray-400/10 
 						landscape:w-full  landscape:lg:px-20 landscape:px-5  shrink-0
 						portrait:w-full    portrait:px-4  " />
 					

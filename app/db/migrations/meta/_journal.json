@@ -50,6 +50,13 @@
       "when": 1783493686394,
       "tag": "0006_curvy_doctor_spectrum",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790669354417,
+      "tag": "0007_lumpy_mimic",
+      "breakpoints": true
     }
   ]
 }

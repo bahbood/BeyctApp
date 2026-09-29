@@ -62,6 +62,20 @@ ON products
 FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column();
 
+
+-- ==========================================
+-- messages
+-- ==========================================
+
+DROP TRIGGER IF EXISTS trigger_messages_update_updated_at
+ON messages;
+
+CREATE TRIGGER trigger_messages_update_updated_at
+BEFORE UPDATE
+ON messages
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
+
 `;
 
 

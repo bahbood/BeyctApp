@@ -266,8 +266,12 @@ const {logInPage_toggleShow,logOutPage_toggleShow ,ProfilePage_toggleShow,Regist
 
                     <span className='text-xs hover:text-orange-600 cursor-pointer' onClick={()=>logOutPage_toggleShow()} >خروج کاربران</span>
 
-                 )}
-                 
+                  )}
+
+                  {user &&(
+                    <Link className='text-xs hover:text-orange-600' href='/messages' onClick={()=>setIsOpen(false)} >پیام های من</Link>
+                  )}
+                  
                 </div>
               </div>
 

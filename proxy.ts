@@ -8,6 +8,8 @@ const admin_ProtectedRoutes:string[] = ['app/(Auth)/users']
 const store_ProtectedRoutes:string[] = ['app/(bazar)/(StoresManagment)']
 const newsAgency_ProtectedRoutes:string[] = []
 const services_ProtectedRoutes:string[] = []
+// مسیرهایی که فقط کاربران وارد شده سایت می توانند به آن ها دسترسی داشته باشند
+const loggedIn_ProtectedRoutes:string[] = ['/messages']
 //const protectedRoutes:string[] = ['/store', '/storeProfile', '/storeActivation', '/productsList','/users']
 const publicRoutes :string[] = ['/','app/(bazar)/bazar']
 
@@ -21,8 +23,9 @@ export default async function proxy(req: NextRequest) {
   const is_store_ProtectedRoute = store_ProtectedRoutes.some((route) => path === route || path.startsWith(route + '/'))
   const is_NewsAgency_ProtectedRoute = newsAgency_ProtectedRoutes.some((route) => path === route || path.startsWith(route + '/'))
   const is_services_ProtectedRoute = services_ProtectedRoutes.some((route) => path === route || path.startsWith(route + '/'))
+  const is_loggedIn_ProtectedRoute = loggedIn_ProtectedRoutes.some((route) => path === route || path.startsWith(route + '/'))
  
-    const isProtectedRoute = is_Admin_ProtectedRoute || is_store_ProtectedRoute || is_NewsAgency_ProtectedRoute || is_services_ProtectedRoute 
+    const isProtectedRoute = is_Admin_ProtectedRoute || is_store_ProtectedRoute || is_NewsAgency_ProtectedRoute || is_services_ProtectedRoute || is_loggedIn_ProtectedRoute
   const isPublicRoute = publicRoutes.includes(path)
   
   console.log(' *  > proxy :  path :', path)
