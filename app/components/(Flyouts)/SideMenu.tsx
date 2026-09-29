@@ -200,13 +200,14 @@ const {logInPage_toggleShow,logOutPage_toggleShow ,ProfilePage_toggleShow,Regist
               </div>
               )}
 
-{/* show for users that have active store */}
+{/* show for users that own a store */}
               {user?.store_active && (
               <div className=' w-full  bg-gray-200'>
                 <label className='block w-full px-2 py-2 bg-sky-300 text-white  text-xs'>مدیریت  فروشگاه :</label>
                 <div className='flex flex-col w-full mx-auto gap-3 px-3 py-2  '>
-                <Link className='text-xs hover:text-orange-600' href='/storeProfile' onClick={()=>setIsOpen(false)}>مدیریت فروشگاه </Link>
-                <Link className='text-xs hover:text-orange-600' href='/storeActivation' onClick={()=>setIsOpen(false)} >فعال سازی فروشگاه</Link>
+                <Link className='text-xs hover:text-orange-600' href='/myStore' onClick={()=>setIsOpen(false)}>فروشگاه من </Link>
+                <Link className='text-xs hover:text-orange-600' href='/storeProfile' onClick={()=>setIsOpen(false)}>پروفایل فروشگاه </Link>
+                <Link className='text-xs hover:text-orange-600' href='/productsList' onClick={()=>setIsOpen(false)}>مدیریت محصولات </Link>
                 </div>
               </div>
               )}
@@ -236,10 +237,10 @@ const {logInPage_toggleShow,logOutPage_toggleShow ,ProfilePage_toggleShow,Regist
              {user && (
               <div className=' w-full  bg-gray-200'>
                 <label className='block w-full px-2 py-2 bg-sky-300 text-white  text-xs'>لینک های کاربران سایت  :</label>
-                <div className='flex flex-col w-full mx-auto gap-3 px-3 py-2  '>
-                  {user?.store_active==false && 
+                 <div className='flex flex-col w-full mx-auto gap-3 px-3 py-2  '>
+                   {user?.store_active===false &&
                      <Link className='text-xs hover:text-orange-600' href='/myStore' onClick={()=>setIsOpen(false)} >مدیریت فروشگاه - درخواست فعال سازی</Link>
-                  }
+                   }
                   {user?.serviceman_active==false && 
                     <Link className='text-xs hover:text-orange-600' href='/' onClick={()=>setIsOpen(false)} >درخواست فعال سازی خدمات و مشاغل</Link>
                   }

@@ -1,7 +1,13 @@
 // app/db/schema/stores.ts
 import { sql } from 'drizzle-orm';
-import { boolean, pgTable, serial,  timestamp, varchar,check, integer } from 'drizzle-orm/pg-core';
+import { boolean, check, integer, pgEnum, pgTable, serial, text, timestamp, varchar } from 'drizzle-orm/pg-core';
 import { users } from './users';
+
+// وضعیت فروشگاه : inactive = ثبت شده ولی اشتراکی خریداری نشده ، pending = درخواست فعالسازی ثبت شده و در انتظار تایید مدیر ، active = فعال
+export const storeStatuses = pgEnum('storeStatuses', ['inactive', 'pending', 'active']);
+
+// بازه اشتراک خریداری شده
+export const storeSubscriptionPlans = pgEnum('storeSubscriptionPlans', ['monthly', 'yearly']);
 
 
 export const stores = pgTable('stores', {
@@ -13,7 +19,11 @@ export const stores = pgTable('stores', {
   store_name:   varchar('store_name', { length: 30 }).notNull().unique(),
   store_manager:varchar('store_manager', { length: 150 }).notNull(),
   store_desc:   varchar('store_desc', { length: 200 }).notNull(),
-  store_about:  varchar('store_about'),
+  store_about:  text('store_about'),
+
+  // تصاویر فروشگاه : نام فایل ذخیره شده در public/storeImages
+  store_logo:         varchar('store_logo', { length: 255 }),
+  store_header_banner:varchar('store_header_banner', { length: 255 }),
 
   store_address: varchar('store_address', { length: 250 }),
   store_tell:   varchar('store_tell', { length: 11 }),
@@ -28,6 +38,15 @@ export const stores = pgTable('stores', {
 
   //is_outofaccess این فیلد مشخصا برای اعمال محدودیت و از دسترس خارج کردن فروشگاه توسط مدیر سایت طراحی شده
   is_outofaccess:    boolean('is_outofaccess').default(false),
+
+  // وضعیت چرخه تاسیس و فعالسازی فروشگاه
+  store_status: storeStatuses('store_status').default('inactive').notNull(),
+
+  // مدت اشتراک خریداری شده و تصویر رسید واریز بانکی
+  subscription_plan:      storeSubscriptionPlans('subscription_plan'),
+  payment_receipt:        varchar('payment_receipt', { length: 255 }),
+  activation_requested_at:timestamp('activation_requested_at'),
+  activated_at:           timestamp('activated_at'),
 
   //expired_at فروشگاه  فقط در بازه زمانی خریداری شده توسط ادمین فروشگاه دیده خواهد شد
   expired_at:timestamp('expired_at').defaultNow().notNull(),
@@ -54,6 +73,10 @@ check(
   sql`${table.store_shaba_number} ~ '^[0-9]{22}$'`
 ),
 ]);
+
+
+export type Store = typeof stores.$inferSelect;
+export type NewStore = typeof stores.$inferInsert;
 
 
 

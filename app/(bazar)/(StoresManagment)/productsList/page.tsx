@@ -89,13 +89,13 @@ export default async function ProductsListPage() {
         )}
 
         <div className="flex gap-2 mt-4">
-          <Link href="/storeProfile"
+          <Link href="/myStore"
             className="block bg-gray-600 hover:bg-gray-700 text-white w-full rounded-md px-3 pt-2 pb-2 text-center text-xs outline-0">
-            پروفایل فروشگاه
+            فروشگاه من
           </Link>
-          <Link href="/storeActivation"
-            className="block bg-green-600 hover:bg-green-700 text-white w-full rounded-md px-3 pt-2 pb-2 text-center text-xs outline-0">
-            فعالسازی اشتراک
+          <Link href="/storeProfile"
+            className="block bg-sky-600 hover:bg-sky-700 text-white w-full rounded-md px-3 pt-2 pb-2 text-center text-xs outline-0">
+            پروفایل فروشگاه
           </Link>
         </div>
       </main>
