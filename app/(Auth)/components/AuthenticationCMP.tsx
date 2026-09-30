@@ -1,18 +1,22 @@
 import { useFlyoutPage } from "@/app/components/(Flyouts)/(Provider)/FlyoutPageContextProvider"
-
+import { updateSession } from "@/app/(Auth)/lib/session"
 
 export default function AuthenticationCMP({className ,}:{className:string , }){
 
-        const {logInPage_toggleShow,logOutPage_toggleShow , user } = useFlyoutPage()
+        const {logInPage_toggleShow,logOutPage_toggleShow , user ,setUser} = useFlyoutPage()
+        
+        const UserCMP_ClickHandler = async () => {
 
-        const UserCMP_ClickHandler=()=>{
-                if(user)
-                {
-                    logOutPage_toggleShow()
-                }
-                else{
-                    logInPage_toggleShow()
-                }
+            const result = await updateSession()
+
+            if (!result.success || !result.user) {
+                setUser(null)
+                logInPage_toggleShow()
+                return
+            }
+
+            setUser(result.user)
+            logOutPage_toggleShow()
         }
     
     return(

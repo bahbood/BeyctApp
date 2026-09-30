@@ -121,8 +121,8 @@ export async function updateSession():Promise<{ success: boolean; user?: logined
     const email = payload.email as string || ''
 
     let expireTime = 0
-      if (role === userRoles.enumValues[0] || role === userRoles.enumValues[1]) {
-      expireTime = 30 * 60 * 1000
+      if (role === userRoles.enumValues[0] ) {
+      expireTime = 60 * 60 * 1000
     } else {
       expireTime = 7 * 24 * 60 * 60 * 1000
     }
@@ -139,15 +139,20 @@ export async function updateSession():Promise<{ success: boolean; user?: logined
       path: '/',
     })
     return {
-      success: true,
-      user: {
-        name: name,
-        family: family,
-        avatar: avatar || '',
-        mobile: mobile || '',
-        email: email || '',
-      }
-    }
+  success: true,
+  user: {
+    id: userId,
+    name,
+    family,
+    avatar,
+    mobile,
+    email,
+    role,
+    store_active: payload.store_active as boolean || false,
+    news_agency_active: payload.news_agency_active as boolean || false,
+    serviceman_active: payload.serviceman_active as boolean || false,
+  }
+}
   } catch (error) {
     console.error('Error updating session:', error)
     return { success: false, user: null }
