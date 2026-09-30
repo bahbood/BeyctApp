@@ -55,7 +55,7 @@ export default function StoreProfileForm({ store }: { store: Store }) {
   }
 
   return (
-    <form action={formAction} className="flex flex-col gap-4">
+    <form action={formAction} className="flex max-w-xl flex-col gap-4">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex flex-col gap-4">
         <h3 className="text-sm font-bold text-gray-700 border-b border-gray-200 pb-2">تصاویر فروشگاه</h3>
 
@@ -168,7 +168,7 @@ export default function StoreProfileForm({ store }: { store: Store }) {
         </InputRow>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex flex-col gap-3">
+      <div className=" bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex flex-col gap-3">
         <h3 className="text-sm font-bold text-gray-700 border-b border-gray-200 pb-2">کد امنیتی</h3>
         <CaptchaBlock captchaRef={captchaRef} error={state?.errors?.userCaptcha} />
       </div>
@@ -211,7 +211,7 @@ function ImageField({
 }) {
   return (
     <InputRow label={label} error={error}>
-      <div className="flex items-center gap-3">
+      <div className="flex flex-col items-center gap-3">
         {preview ? (
           <Image src={preview} alt={label} width={200} height={200} unoptimized className={previewClassName} />
         ) : (
@@ -220,7 +220,7 @@ function ImageField({
           </div>
         )}
 
-        <div className="flex flex-1 flex-col gap-1">
+        <div className="flex w-full flex-1 flex-col gap-1">
           <input
             id={name}
             name={name}

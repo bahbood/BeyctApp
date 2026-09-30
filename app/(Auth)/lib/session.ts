@@ -31,8 +31,8 @@ export async function createSession(
 ): Promise<{ success: boolean; user?: logined_User_Info }> {
   try {
     let expireTime = 0
-    if (role === userRoles.enumValues[0] || role === userRoles.enumValues[1]) {
-      expireTime = 30 * 60 * 1000
+    if (role === userRoles.enumValues[0] ) {
+      expireTime = 60 * 60 * 1000
     } else {
       expireTime = 7 * 24 * 60 * 60 * 1000
     }

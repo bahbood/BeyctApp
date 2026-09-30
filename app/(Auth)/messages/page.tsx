@@ -15,9 +15,7 @@ import { MarkAllAsReadButton, MarkAsReadButton } from './MessageListButtons'
 
 export const dynamic = 'force-dynamic'
 
-export const metadata = {
-  title: 'پیام ها',
-}
+
 
 function formatDate(date: Date) {
   return new Date(date).toLocaleString('fa-IR')

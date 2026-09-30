@@ -20,9 +20,9 @@ export default async function StoreProfilePage() {
 
   if (!store) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="w-full min-h-screen bg-gray-50">
         <header className="bg-white shadow-sm border-b">
-          <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="w-full mx-auto px-4 py-3 flex items-center justify-between">
             <Link href="/" className="text-sm text-gray-500 hover:text-gray-700">
               خانه
             </Link>
@@ -51,7 +51,7 @@ export default async function StoreProfilePage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm border-b">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div className="w-full mx-auto px-4 py-3 flex items-center justify-between">
           <Link href="/myStore" className="text-sm text-gray-500 hover:text-gray-700">
             فروشگاه من
           </Link>
@@ -59,8 +59,8 @@ export default async function StoreProfilePage() {
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-6 flex flex-col gap-4">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 flex flex-row items-center gap-3">
+      <main className="w-full mx-auto px-4 py-6 flex flex-col items-center gap-4">
+        <div className="w-full bg-white rounded-lg shadow-sm border border-gray-200 p-3 flex flex-row items-center gap-3">
           <span className="text-sm font-semibold text-gray-800">{store.store_name}</span>
           <span className={`text-[10px] font-bold border rounded px-2 py-0.5 ${status.style}`}>{status.label}</span>
           <span className="mr-auto text-[10px] text-gray-500" dir="ltr">

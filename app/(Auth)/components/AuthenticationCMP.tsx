@@ -3,7 +3,7 @@ import { useFlyoutPage } from "@/app/components/(Flyouts)/(Provider)/FlyoutPageC
 
 export default function AuthenticationCMP({className ,}:{className:string , }){
 
-        const {logInPage_toggleShow,logOutPage_toggleShow ,ProfilePage_toggleShow,RegisterPage_toggleShow, user } = useFlyoutPage()
+        const {logInPage_toggleShow,logOutPage_toggleShow , user } = useFlyoutPage()
 
         const UserCMP_ClickHandler=()=>{
                 if(user)
