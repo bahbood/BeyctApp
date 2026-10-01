@@ -34,7 +34,7 @@ export default function ActivationForm({ store }: { store: Store }) {
   const isPendingReview = store.store_status === 'pending'
 
   return (
-    <form action={formAction} className="w-full flex flex-col gap-4">
+    <form action={formAction} className="max-w-xs justify-self-center flex-col gap-4">
       <h3 className="text-sm font-bold text-gray-700 border-b border-gray-200 pb-2">فعال سازی اشتراک فروشگاه</h3>
 
       {isPendingReview && (

@@ -26,7 +26,7 @@ export default function AddNewStoreForm() {
   }, [state])
 
   return (
-    <form action={formAction} className="w-full flex flex-col gap-4">
+    <form action={formAction} className="max-w-xs justify-self-center flex flex-col gap-4">
       <h3 className="text-sm font-bold text-gray-700 border-b border-gray-200 pb-2">درخواست تاسیس فروشگاه</h3>
       <p className="text-[10px] text-gray-500 leading-relaxed">
         فروشگاه شما پس از ثبت درخواست غیرفعال خواهد بود. برای فعالسازی و نمایش در بازار، باید اشتراک خریداری کنید و

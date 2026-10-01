@@ -28,7 +28,7 @@ export default function EditStoreForm({ store, onDone }: { store: Store; onDone?
   }, [state])
 
   return (
-    <form action={formAction} className="w-full flex flex-col gap-4">
+    <form action={formAction} className="max-w-xs justify-self-center flex-col gap-4">
       <h3 className="text-sm font-bold text-gray-700 border-b border-gray-200 pb-2">ویرایش اطلاعات فروشگاه</h3>
 
       <InputRow label="نام فروشگاه" error={state?.errors?.store_name}>

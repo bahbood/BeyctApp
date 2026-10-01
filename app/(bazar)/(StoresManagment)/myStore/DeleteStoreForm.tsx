@@ -27,7 +27,7 @@ export default function DeleteStoreForm({ onDone }: { onDone?: () => void }) {
   }, [state])
 
   return (
-    <form action={formAction} className="w-full flex flex-col gap-4">
+    <form action={formAction} className="max-w-xs justify-self-center flex flex-col gap-4">
       <h3 className="text-sm font-bold text-red-700 border-b border-gray-200 pb-2">حذف فروشگاه</h3>
       <p className="text-[10px] text-gray-600 leading-relaxed">
         با حذف فروشگاه، تمام محصولات ثبت شده در آن نیز حذف میشوند. این عملیات قابل بازگشت نیست.
