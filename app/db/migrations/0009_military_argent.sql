@@ -1,0 +1,2 @@
+CREATE TYPE "public"."messageTypes" AS ENUM('standard', 'store_activation_request', 'service_activation_request', 'news_agency_request');--> statement-breakpoint
+ALTER TABLE "messages" ADD COLUMN "message_type" "messageTypes" DEFAULT 'standard' NOT NULL;

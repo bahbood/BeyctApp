@@ -26,6 +26,7 @@ const messageColumns = {
   is_read: messages.is_read,
   read_at: messages.read_at,
   created_at: messages.created_at,
+  message_type: messages.message_type,
   sender_id: messages.sender_id,
   receiver_id: messages.receiver_id,
   sender_name: sender.name,
@@ -55,9 +56,9 @@ export async function getUnreadMessagesCount(userId: number): Promise<number> {
  */
 export async function getMessagesList(
   userId: number,
-  options: { box: MessageBox; search?: string; page?: number; pageSize?: number } = { box: 'inbox' }
+  options: { box: MessageBox; search?: string; page?: number; pageSize?: number; messageType?: string } = { box: 'inbox' }
 ) {
-  const { box, search = '', page = 1, pageSize = MESSAGES_PAGE_SIZE } = options
+  const { box, search = '', page = 1, pageSize = MESSAGES_PAGE_SIZE, messageType } = options
   const offset = (Math.max(1, page) - 1) * pageSize
 
   const searchTerm = search.trim()
@@ -75,7 +76,14 @@ export async function getMessagesList(
     : undefined
 
   const boxFilter = eq(box === 'sent' ? messages.sender_id : messages.receiver_id, userId)
-  const where = searchFilter ? and(boxFilter, searchFilter) : boxFilter
+  const typeFilter = messageType ? eq(messages.message_type, messageType as any) : undefined
+  let where = boxFilter
+  if (typeFilter) {
+    where = and(where, typeFilter)
+  }
+  if (searchFilter) {
+    where = and(where, searchFilter)
+  }
 
   const [{ total }] = await db
     .select({ total: count() })

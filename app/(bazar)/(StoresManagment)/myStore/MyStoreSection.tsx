@@ -57,20 +57,18 @@ export default function MyStoreSection({ store }: { store: Store | null }) {
         </span>
 
         <div className="mr-auto flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={() => setPanel('delete')}
+          <Link
+            href="/myStore/delete"
             className="text-[10px] text-red-600 border border-red-200 hover:bg-red-50 rounded px-2 py-1 cursor-pointer"
           >
-            حذف
-          </button>
-          <button
-            type="button"
-            onClick={() => setPanel('edit')}
+            O-O�U?
+          </Link>
+          <Link
+            href="/myStore/edit"
             className="text-[10px] text-sky-600 border border-sky-200 hover:bg-sky-50 rounded px-2 py-1 cursor-pointer"
           >
-            ویرایش
-          </button>
+            U^UOO�OUOO'
+          </Link>
           <Link
             href="/storeProfile"
             className="text-[10px] text-gray-600 border border-gray-200 hover:bg-gray-50 rounded px-2 py-1"
@@ -91,10 +89,10 @@ export default function MyStoreSection({ store }: { store: Store | null }) {
           {canActivate && (
             <button
               type="button"
-              onClick={() => setPanel('activation')}
+              onClick={() => window.location.href = '/myStore/activate'}
               className="mt-2 bg-green-600 hover:bg-green-700 text-white text-xs rounded-md px-3 py-2 outline-0 cursor-pointer"
             >
-              تمدید اشتراک
+              O�U.O_UOO_ OO'O�O�OUc
             </button>
           )}
         </div>
@@ -106,31 +104,17 @@ export default function MyStoreSection({ store }: { store: Store | null }) {
           </p>
           <button
             type="button"
-            onClick={() => setPanel('activation')}
+            onClick={() => window.location.href = '/myStore/activate'}
             className="mt-2 bg-green-600 hover:bg-green-700 text-white text-xs rounded-md px-3 py-2 outline-0 cursor-pointer"
           >
-            فعالسازی فروشگاه
+            U?O1OU,O3OO�UO U?O�U^O'U_OU�
           </button>
         </div>
       )}
 
-      <FlyoutLayout onCloseMe={closeMe} isOpen={panel === 'edit'}>
-        <div className="w-full h-full overflow-y-auto bg-gray-50 p-3">
-          <EditStoreForm store={store} onDone={closeMe} />
-        </div>
-      </FlyoutLayout>
 
-      <FlyoutLayout onCloseMe={closeMe} isOpen={panel === 'delete'}>
-        <div className="w-full h-full overflow-y-auto bg-gray-50 p-3">
-          <DeleteStoreForm onDone={closeMe} />
-        </div>
-      </FlyoutLayout>
 
-      <FlyoutLayout onCloseMe={closeMe} isOpen={panel === 'activation'}>
-        <div className="w-full h-full overflow-y-auto bg-gray-50 p-3">
-          <ActivationForm store={store} />
-        </div>
-      </FlyoutLayout>
+
     </div>
   )
 }

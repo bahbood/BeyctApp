@@ -57,7 +57,9 @@ export default function MessageForm({
         )}
       </InputRow>
 
-      <InputRow label="موضوع" error={state?.errors?.subject}>
+      <input type="hidden" name="message_type" value="standard" />
+
+      <InputRow label="U.U^OU^O1" error={state?.errors?.subject}>
         <input
           name="subject"
           type="text"

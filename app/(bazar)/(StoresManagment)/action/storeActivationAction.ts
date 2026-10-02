@@ -5,7 +5,7 @@
 import captchaValidationAction from '@/app/components/(captcha)/action/captchaValidationAction'
 import { getUserFromSession } from '@/app/(Auth)/lib/session'
 import { db } from '@/app/db'
-import { stores, users } from '@/app/db/schema'
+import { messages, stores, users } from '@/app/db/schema'
 import { and, eq } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
 import { calculateExpiredAt, isSubscriptionPlan, SubscriptionPlan } from '../lib/storeSubscription'
@@ -92,8 +92,27 @@ export async function storeActivationAction(
       })
       .where(eq(stores.id, store.id))
 
+    // Send notification message to admin
+    const [admin] = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.role, 'admin'))
+      .orderBy(users.id)
+      .limit(1)
+
+    if (admin) {
+      await db.insert(messages).values({
+        sender_id: userId,
+        receiver_id: admin.id,
+        subject: 'درخواست فعال سازی فروشگاه',
+        body: `کاربر درخواست فعال سازی فروشگاه "${store.store_name}" را ارسال کرده است.`,
+        message_type: 'store_activation_request',
+      })
+    }
+
     revalidatePath('/myStore')
     revalidatePath('/storeProfile')
+    revalidatePath('/messages')
 
     return { success: true }
   } catch (error) {

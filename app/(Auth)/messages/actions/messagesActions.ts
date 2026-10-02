@@ -25,6 +25,7 @@ export type MessageActionState = {
     receiver_id: string
     subject: string
     body: string
+    message_type?: string
   }
 } | null
 
@@ -61,8 +62,9 @@ export async function sendMessage(prevState: MessageActionState, formData: FormD
   const requestedReceiverId = Number(formData.get('receiver_id'))
   const subject = ((formData.get('subject') as string) || '').trim()
   const body = ((formData.get('body') as string) || '').trim()
+  const messageType = ((formData.get('message_type') as string) || 'standard') as any
 
-  const values = { receiver_id: String(requestedReceiverId || ''), subject, body }
+  const values = { receiver_id: String(requestedReceiverId || ''), subject, body, message_type: messageType }
   const errors: NonNullable<MessageActionState>['errors'] = {}
 
   if (subject.length > MAX_SUBJECT_LENGTH) {
@@ -117,6 +119,7 @@ export async function sendMessage(prevState: MessageActionState, formData: FormD
       receiver_id: receiverId,
       subject: subject || null,
       body,
+      message_type: messageType,
     })
 
     revalidateMessagePaths()
