@@ -45,7 +45,11 @@ export default function MyStoreSection({ store }: { store: Store | null }) {
   }
 
   const status = getStoreDisplayStatus(store)
-  const canActivate = store.store_status !== 'active' || new Date(store.expired_at) < new Date()
+
+  // فروشگاه در انتظار تایید است: کاربر نباید بتواند دوباره درخواست بدهد
+  const isPending = store.store_status === 'pending'
+  const isSubscriptionExpired = new Date(store.expired_at) < new Date()
+  const isActive = store.store_status === 'active' && !isSubscriptionExpired
 
   return (
     <div className="flex flex-col gap-4">
@@ -57,18 +61,20 @@ export default function MyStoreSection({ store }: { store: Store | null }) {
         </span>
 
         <div className="mr-auto flex items-center gap-2 shrink-0">
-          <Link
-            href="/myStore/delete"
+          <button
+            type="button"
+            onClick={() => setPanel('delete')}
             className="text-[10px] text-red-600 border border-red-200 hover:bg-red-50 rounded px-2 py-1 cursor-pointer"
           >
-            O-O�U?
-          </Link>
-          <Link
-            href="/myStore/edit"
+            حذف فروشگاه
+          </button>
+          <button
+            type="button"
+            onClick={() => setPanel('edit')}
             className="text-[10px] text-sky-600 border border-sky-200 hover:bg-sky-50 rounded px-2 py-1 cursor-pointer"
           >
-            U^UOO�OUOO'
-          </Link>
+            ویرایش فروشگاه
+          </button>
           <Link
             href="/storeProfile"
             className="text-[10px] text-gray-600 border border-gray-200 hover:bg-gray-50 rounded px-2 py-1"
@@ -86,35 +92,68 @@ export default function MyStoreSection({ store }: { store: Store | null }) {
               {formatDate(store.expired_at)}
             </span>
           </div>
-          {canActivate && (
+          {!isActive && (
             <button
               type="button"
-              onClick={() => window.location.href = '/myStore/activate'}
+              onClick={() => setPanel('activation')}
               className="mt-2 bg-green-600 hover:bg-green-700 text-white text-xs rounded-md px-3 py-2 outline-0 cursor-pointer"
             >
-              O�U.O_UOO_ OO'O�O�OUc
+              تمدید اشتراک فروشگاه
             </button>
           )}
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex flex-col gap-2">
-          <p className="text-xs text-gray-600 leading-relaxed">
-            فروشگاه شما ثبت شده ولی هنوز فعال نیست. برای فعالسازی و نمایش در بازار، اشتراک مورد نظر را انتخاب کنید و
-            رسید واریز بانکی را ثبت کنید.
-          </p>
-          <button
-            type="button"
-            onClick={() => window.location.href = '/myStore/activate'}
-            className="mt-2 bg-green-600 hover:bg-green-700 text-white text-xs rounded-md px-3 py-2 outline-0 cursor-pointer"
-          >
-            U?O1OU,O3OO�UO U?O�U^O'U_OU�
-          </button>
+          {isPending ? (
+            <>
+              <p className="text-xs text-amber-700 leading-relaxed">
+                درخواست فعالسازی فروشگاه شما ثبت شده و جهت بررسی به مدیر سایت ارسال شده است. پس از تایید، فروشگاه شما
+                فعال می‌شود.
+              </p>
+              {store.activation_requested_at && (
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-600">تاریخ ثبت درخواست</span>
+                  <span className="text-xs text-gray-800 font-medium" dir="ltr">
+                    {formatDate(store.activation_requested_at)}
+                  </span>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <p className="text-xs text-gray-600 leading-relaxed">
+                فروشگاه شما ثبت شده ولی هنوز فعال نیست. برای فعالسازی و نمایش در بازار، اشتراک مورد نظر را انتخاب کنید و
+                رسید واریز بانکی را ثبت کنید.
+              </p>
+              <button
+                type="button"
+                onClick={() => setPanel('activation')}
+                className="mt-2 bg-green-600 hover:bg-green-700 text-white text-xs rounded-md px-3 py-2 outline-0 cursor-pointer"
+              >
+                ارسال درخواست فعالسازی به مدیر
+              </button>
+            </>
+          )}
         </div>
       )}
 
+      <FlyoutLayout onCloseMe={closeMe} isOpen={panel === 'edit'}>
+        <div className="w-full h-full overflow-y-auto bg-gray-50 p-3">
+          <EditStoreForm store={store} onDone={closeMe} />
+        </div>
+      </FlyoutLayout>
 
+      <FlyoutLayout onCloseMe={closeMe} isOpen={panel === 'delete'}>
+        <div className="w-full h-full overflow-y-auto bg-gray-50 p-3">
+          <DeleteStoreForm onDone={closeMe} />
+        </div>
+      </FlyoutLayout>
 
-
+      <FlyoutLayout onCloseMe={closeMe} isOpen={panel === 'activation'}>
+        <div className="w-full h-full overflow-y-auto bg-gray-50 p-3">
+          <ActivationForm store={store} onDone={closeMe} />
+        </div>
+      </FlyoutLayout>
     </div>
   )
 }

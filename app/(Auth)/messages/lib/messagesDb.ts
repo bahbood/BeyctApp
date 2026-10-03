@@ -2,13 +2,30 @@
 // لایه دسترسی به داده های پیام ها
 
 import { db } from '@/app/db'
-import { messages, users, userRoles } from '@/app/db/schema'
+import { messages, messageTypes, users, userRoles } from '@/app/db/schema'
 import { and, count, desc, eq, ilike, ne, or, type SQL } from 'drizzle-orm'
 import { alias } from 'drizzle-orm/pg-core'
 
 export const MESSAGES_PAGE_SIZE = 10
 
 export type MessageBox = 'inbox' | 'sent'
+
+export type MessageType = (typeof messageTypes.enumValues)[number]
+
+/** همه انواع پیام موجود در دیتابیس */
+export const MESSAGE_TYPES: readonly MessageType[] = messageTypes.enumValues
+
+export function isMessageType(value: unknown): value is MessageType {
+  return typeof value === 'string' && (messageTypes.enumValues as string[]).includes(value)
+}
+
+/** برچسب فارسی نوع پیام برای نمایش به کاربر */
+export const MESSAGE_TYPE_LABELS: Record<MessageType, string> = {
+  standard: 'پیام معمولی',
+  store_activation_request: 'درخواست فعالسازی فروشگاه',
+  service_activation_request: 'درخواست فعالسازی خدمات',
+  news_agency_request: 'درخواست آژانس خبری',
+}
 
 /** نام نمایشی کاربر (نام + نام خانوادگی) و در صورت خالی بودن نام کاربری */
 export function displayName(user: { name?: string | null; family?: string | null; user_name?: string | null }): string {
@@ -76,8 +93,8 @@ export async function getMessagesList(
     : undefined
 
   const boxFilter = eq(box === 'sent' ? messages.sender_id : messages.receiver_id, userId)
-  const typeFilter = messageType ? eq(messages.message_type, messageType as any) : undefined
-  let where = boxFilter
+  const typeFilter = isMessageType(messageType) ? eq(messages.message_type, messageType) : undefined
+  let where: SQL | undefined = boxFilter
   if (typeFilter) {
     where = and(where, typeFilter)
   }

@@ -193,8 +193,10 @@ const {logInPage_toggleShow,logOutPage_toggleShow ,ProfilePage_toggleShow,Regist
 {/* show for admin only */}
               {user?.role === 'admin' && (
               <div className=' w-full  bg-gray-200'> 
-                <label className='block w-full px-2 py-2 bg-sky-300 text-white  text-xs'>مدیریت اسلایدر اصلی</label>
+                <label className='block w-full px-2 py-2 bg-sky-300 text-white  text-xs'>مدیریت سایت</label>
                 <div className='flex flex-col w-full mx-auto gap-3 px-3 py-2  '>
+                  <Link className='text-xs hover:text-orange-600' href='/admin/stores' onClick={() => setIsOpen(false)}>مدیریت فروشگاه‌ها و درخواست فعالسازی</Link>
+                  <Link className='text-xs hover:text-orange-600' href='/users' onClick={() => setIsOpen(false)}>مدیریت کاربران</Link>
                   <Link className='text-xs hover:text-orange-600' href='/slides' onClick={() => setIsOpen(false)}>مدیریت اسلاید ها </Link>
                 </div>
               </div>

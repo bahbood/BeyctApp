@@ -5,6 +5,7 @@ import localFont from "next/font/local";
 import { FlyoutPageProvider } from "./components/(Flyouts)/(Provider)/FlyoutPageContextProvider";
 import HeaderCMP from "./components/HeaderCMP";
 import { getUserFromSession } from "./(Auth)/lib/session";
+import { withFreshRoleFlags } from "./(Auth)/lib/freshRoleFlags";
 import { getUnreadMessagesCount } from "./(Auth)/messages/lib/messagesDb";
 
 export const dynamic = 'force-dynamic';
@@ -24,7 +25,9 @@ export default async function RootLayout({
 	children: React.ReactNode;
 }>) {
 	// ✅ دریافت اطلاعات کاربر از session
-  const initialUser = await getUserFromSession();
+  // پرچم‌های فعال بودن نقش‌ها از دیتابیس خوانده می‌شوند تا پس از تایید یا حذف فروشگاه
+  // منوی کناری بدون نیاز به خروج/ورود مجدد به‌روز شود
+  const initialUser = await withFreshRoleFlags(await getUserFromSession());
 
   // ✅ تعداد پیام های خوانده نشده برای نمایش نشانگر در هدر
   const unreadMessagesCount = initialUser?.id ? await getUnreadMessagesCount(initialUser.id) : 0;

@@ -21,7 +21,9 @@ export default function DeleteStoreForm({ onDone }: { onDone?: () => void }) {
   }, [state, router, onDone])
 
   useEffect(() => {
-    if (state?.success === false && state?.errors?.userCaptcha) {
+    // کد امنیتی فقط در صورت صحت در سرور مصرف می‌شود. اگر مصرف شده باشد باید
+    // کد جدید بارگذاری شود، وگرنه تلاش بعدی کاربر همیشه با خطا مواجه می‌شود.
+    if (state?.success === false && state.captchaConsumed) {
       captchaRef.current?.clear()
     }
   }, [state])

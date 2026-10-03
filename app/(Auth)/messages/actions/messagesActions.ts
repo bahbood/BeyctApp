@@ -9,6 +9,7 @@ import { and, eq } from 'drizzle-orm'
 import { cookies } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { decryptSession, type SessionPayload } from '@/app/(Auth)/lib/session'
+import type { MessageType } from '../lib/messagesDb'
 
 const MAX_SUBJECT_LENGTH = 100
 const MAX_BODY_LENGTH = 5000
@@ -62,7 +63,11 @@ export async function sendMessage(prevState: MessageActionState, formData: FormD
   const requestedReceiverId = Number(formData.get('receiver_id'))
   const subject = ((formData.get('subject') as string) || '').trim()
   const body = ((formData.get('body') as string) || '').trim()
-  const messageType = ((formData.get('message_type') as string) || 'standard') as any
+
+  // پیام های ارسالی از فرم همیشه از نوع معمولی هستند.
+  // پیام های سیستمی (درخواست فعالسازی و ...) فقط توسط اکشن های سمت سرور ثبت می شوند
+  // تا کاربر نتواند با دستکاری فرم، پیام جعلی با نوع سیستمی بسازد.
+  const messageType: MessageType = 'standard'
 
   const values = { receiver_id: String(requestedReceiverId || ''), subject, body, message_type: messageType }
   const errors: NonNullable<MessageActionState>['errors'] = {}

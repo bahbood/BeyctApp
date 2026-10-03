@@ -14,7 +14,7 @@ const PLANS = ['monthly', 'yearly'] as const
 
 const faNumber = new Intl.NumberFormat('fa-IR')
 
-export default function ActivationForm({ store }: { store: Store }) {
+export default function ActivationForm({ store, onDone }: { store: Store; onDone?: () => void }) {
   const captchaRef = useRef<CaptchaHandler>(null)
   const router = useRouter()
   const [state, formAction, isPending] = useActionState<StoreActivationState, FormData>(storeActivationAction, null)
@@ -22,26 +22,36 @@ export default function ActivationForm({ store }: { store: Store }) {
   useEffect(() => {
     if (state?.success === true) {
       router.refresh()
+      onDone?.()
     }
-  }, [state, router])
+  }, [state, router, onDone])
 
   useEffect(() => {
-    if (state?.success === false && state?.errors?.userCaptcha) {
+    // کد امنیتی فقط در صورت صحت در سرور مصرف می‌شود. اگر مصرف شده باشد باید
+    // کد جدید بارگذاری شود، وگرنه تلاش بعدی کاربر همیشه با خطا مواجه می‌شود.
+    if (state?.success === false && state.captchaConsumed) {
       captchaRef.current?.clear()
     }
   }, [state])
 
   const isPendingReview = store.store_status === 'pending'
 
-  return (
-    <form action={formAction} className="max-w-xs justify-self-center flex-col gap-4">
-      <h3 className="text-sm font-bold text-gray-700 border-b border-gray-200 pb-2">فعال سازی اشتراک فروشگاه</h3>
+  // تا زمانی که مدیر سایت تعیین تکلیف درخواست قبلی را مشخص نکرده، امکان ارسال
+  // درخواست جدید وجود ندارد؛ بنابراین فقط وضعیت فعلی نمایش داده می‌شود.
+  if (isPendingReview) {
+    return (
+      <div className="max-w-xs justify-self-center flex flex-col gap-3">
+        <h3 className="text-sm font-bold text-gray-700 border-b border-gray-200 pb-2">فعال سازی اشتراک فروشگاه</h3>
 
-      {isPendingReview && (
-        <div className="flex flex-col gap-1 rounded-md border border-amber-200 bg-amber-50 p-3">
+        <div className="flex flex-col gap-2 rounded-md border border-amber-200 bg-amber-50 p-3">
           <span className="text-[10px] font-bold text-amber-800">درخواست شما در انتظار تایید مدیر سایت است</span>
           {store.activation_requested_at && (
-            <span className="text-[10px] text-amber-700">تاریخ ارسال درخواست: {formatDate(store.activation_requested_at)}</span>
+            <span className="text-[10px] text-amber-700">
+              تاریخ ارسال درخواست: {formatDate(store.activation_requested_at)}
+            </span>
+          )}
+          {store.subscription_plan && (
+            <span className="text-[10px] text-amber-700">مدت اشتراک: {SUBSCRIPTION_LABELS[store.subscription_plan]}</span>
           )}
           {store.payment_receipt && (
             <a
@@ -54,7 +64,21 @@ export default function ActivationForm({ store }: { store: Store }) {
             </a>
           )}
         </div>
-      )}
+
+        <button
+          type="button"
+          onClick={() => onDone?.()}
+          className="block bg-gray-500 hover:bg-gray-600 text-white w-full rounded-md px-3 pt-2 pb-2 text-xs text-center outline-0 cursor-pointer"
+        >
+          بستن
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <form action={formAction} className="max-w-xs justify-self-center flex-col gap-4">
+      <h3 className="text-sm font-bold text-gray-700 border-b border-gray-200 pb-2">فعال سازی اشتراک فروشگاه</h3>
 
       <InputRow label="مدت اشتراک" error={state?.errors?.subscription_plan}>
         <div className="flex flex-col gap-2">
@@ -98,7 +122,7 @@ export default function ActivationForm({ store }: { store: Store }) {
         disabled={isPending}
         className="block bg-green-600 hover:bg-green-700 text-white w-full rounded-md px-3 pt-2 pb-2 text-xs text-center outline-0 disabled:opacity-50 cursor-pointer"
       >
-        {isPending ? 'در حال ارسال...' : isPendingReview ? 'ارسال مجدد درخواست فعالسازی' : 'ارسال درخواست فعالسازی'}
+        {isPending ? 'در حال ارسال...' : 'ارسال درخواست فعالسازی'}
       </button>
     </form>
   )

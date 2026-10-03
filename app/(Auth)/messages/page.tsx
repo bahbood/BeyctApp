@@ -6,10 +6,14 @@ import { redirect } from 'next/navigation'
 import { getUserFromSession } from '@/app/(Auth)/lib/session'
 import {
   MESSAGES_PAGE_SIZE,
+  MESSAGE_TYPES,
+  MESSAGE_TYPE_LABELS,
   displayName,
   getMessagesList,
   getUnreadMessagesCount,
+  isMessageType,
   type MessageBox,
+  type MessageType,
 } from './lib/messagesDb'
 import { MarkAllAsReadButton, MarkAsReadButton } from './MessageListButtons'
 
@@ -33,19 +37,21 @@ export default async function MessagesPage({
   const box: MessageBox = boxStr === 'sent' ? 'sent' : 'inbox'
   const searchTerm = search?.trim() || ''
   const currentPage = Math.max(1, Number(pageStr) || 1)
-  const messageType = typeStr || ''
+  const messageType = isMessageType(typeStr) ? typeStr : null
 
   const { rows, total } = await getMessagesList(sessionUser.id, {
     box,
     search: searchTerm,
     page: currentPage,
-    messageType: messageType || undefined,
+    messageType: messageType ?? undefined,
   })
 
   const totalPages = Math.max(1, Math.ceil(total / MESSAGES_PAGE_SIZE))
   const unreadTotal = box === 'inbox' ? await getUnreadMessagesCount(sessionUser.id) : 0
 
   const baseUrl = '/messages'
+
+  const messageTypeOptions = MESSAGE_TYPES.filter((t): t is MessageType => t !== 'standard')
 
   function pageUrl(p: number) {
     const params = new URLSearchParams()
@@ -99,10 +105,34 @@ export default async function MessagesPage({
         </Link>
       </div>
 
+      {/* فیلتر نوع پیام */}
+      <form action={baseUrl} method="get" className="flex items-center gap-2 flex-wrap">
+        {box !== 'inbox' && <input type="hidden" name="box" value={box} />}
+        {searchTerm && <input type="hidden" name="search" value={searchTerm} />}
+        <select
+          name="type"
+          defaultValue={messageType ?? ''}
+          className="rounded-md border border-gray-300 px-2 py-1.5 text-xs outline-none focus:border-sky-500 bg-white"
+        >
+          <option value="">همه انواع پیام</option>
+          {messageTypeOptions.map((t) => (
+            <option key={t} value={t}>
+              {MESSAGE_TYPE_LABELS[t]}
+            </option>
+          ))}
+        </select>
+        <button
+          type="submit"
+          className="rounded-md bg-sky-600 hover:bg-sky-700 text-white px-3 py-1.5 text-xs cursor-pointer"
+        >
+          اعمال فیلتر
+        </button>
+      </form>
+
       {/* جستجو */}
       <form action={baseUrl} method="get" className="flex items-center gap-2 flex-wrap">
         {box !== 'inbox' && <input type="hidden" name="box" value={box} />}
-        <input type="hidden" name="type" value={messageType} />
+        <input type="hidden" name="type" value={messageType ?? ''} />
         <input
           type="text"
           name="search"
@@ -168,11 +198,11 @@ export default async function MessagesPage({
                           href={`/messages/${message.id}`}
                           className={`hover:text-sky-600 ${isUnread ? 'font-semibold text-gray-800' : 'text-gray-700'}`}
                         >
-                          {message.subject?.trim() || '(O"O_U^U+ U.U^OU^O1)'}
+                          {message.subject?.trim() || '(بدون موضوع)'}
                         </Link>
-                        {message.message_type && message.message_type !== 'standard' && (
+                        {message.message_type !== 'standard' && (
                           <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded-full text-[9px] bg-indigo-100 text-indigo-700">
-                            {message.message_type}
+                            {MESSAGE_TYPE_LABELS[message.message_type]}
                           </span>
                         )}
                         <p className="text-[10px] text-gray-500 line-clamp-1 mt-0.5">{message.body}</p>

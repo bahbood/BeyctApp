@@ -6,12 +6,18 @@ import captchaValidationAction from '@/app/components/(captcha)/action/captchaVa
 import { getUserFromSession } from '@/app/(Auth)/lib/session'
 import { db } from '@/app/db'
 import { stores, users } from '@/app/db/schema'
-import { and, eq } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
 import { deleteStoreImage } from '../lib/storeImagesDb'
 
 export type StoreActionState = {
   success: boolean
+  /**
+   * آیا کد امنیتی در سرور مصرف شده است؟
+   * کد امنیتی فقط در صورت صحت حذف می‌شود، بنابراین اگر این مقدار true باشد
+   * فرم باید یک کد جدید بارگذاری کند وگرنه کاربر در تلاش بعدی همیشه خطا می‌بیند.
+   */
+  captchaConsumed?: boolean
   errors?: {
     store_name?: string
     store_manager?: string
@@ -81,7 +87,7 @@ export async function createStoreAction(prevState: StoreActionState, formData: F
   const userId = userinfo?.id
 
   if (!userId) {
-    return { success: false, errors: { message: 'نشست نامعتبر ، کاربری لاگین نکرده' }, values }
+    return { success: false, captchaConsumed: true, errors: { message: 'نشست نامعتبر ، کاربری لاگین نکرده' }, values }
   }
 
   try {
@@ -92,7 +98,7 @@ export async function createStoreAction(prevState: StoreActionState, formData: F
       .limit(1)
 
     if (existingStore.length > 0) {
-      return { success: false, errors: { message: 'شما قبلاً یک فروشگاه ثبت کرده‌اید' }, values }
+      return { success: false, captchaConsumed: true, errors: { message: 'شما قبلاً یک فروشگاه ثبت کرده‌اید' }, values }
     }
 
     await db.insert(stores).values({
@@ -110,10 +116,10 @@ export async function createStoreAction(prevState: StoreActionState, formData: F
     console.error('Create store error:', error)
 
     if (error instanceof Error && error.message.includes('stores_store_name_unique')) {
-      return { success: false, errors: { store_name: 'این نام فروشگاه قبلاً ثبت شده است' }, values }
+      return { success: false, captchaConsumed: true, errors: { store_name: 'این نام فروشگاه قبلاً ثبت شده است' }, values }
     }
 
-    return { success: false, errors: { message: 'خطا در ارتباط با سرور' }, values }
+    return { success: false, captchaConsumed: true, errors: { message: 'خطا در ارتباط با سرور' }, values }
   }
 }
 
@@ -134,7 +140,7 @@ export async function updateStoreAction(prevState: StoreActionState, formData: F
   const userId = userinfo?.id
 
   if (!userId) {
-    return { success: false, errors: { message: 'نشست نامعتبر ، کاربری لاگین نکرده' }, values }
+    return { success: false, captchaConsumed: true, errors: { message: 'نشست نامعتبر ، کاربری لاگین نکرده' }, values }
   }
 
   try {
@@ -145,7 +151,7 @@ export async function updateStoreAction(prevState: StoreActionState, formData: F
       .limit(1)
 
     if (existingStore.length === 0) {
-      return { success: false, errors: { message: 'فروشگاهی برای این کاربر یافت نشد' }, values }
+      return { success: false, captchaConsumed: true, errors: { message: 'فروشگاهی برای این کاربر یافت نشد' }, values }
     }
 
     await db
@@ -165,10 +171,10 @@ export async function updateStoreAction(prevState: StoreActionState, formData: F
     console.error('Update store error:', error)
 
     if (error instanceof Error && error.message.includes('stores_store_name_unique')) {
-      return { success: false, errors: { store_name: 'این نام فروشگاه قبلاً ثبت شده است' }, values }
+      return { success: false, captchaConsumed: true, errors: { store_name: 'این نام فروشگاه قبلاً ثبت شده است' }, values }
     }
 
-    return { success: false, errors: { message: 'خطا در ارتباط با سرور' }, values }
+    return { success: false, captchaConsumed: true, errors: { message: 'خطا در ارتباط با سرور' }, values }
   }
 }
 
@@ -183,7 +189,7 @@ export async function deleteStoreAction(prevState: StoreActionState, formData: F
   const userId = userinfo?.id
 
   if (!userId) {
-    return { success: false, errors: { message: 'نشست نامعتبر ، کاربری لاگین نکرده' } }
+    return { success: false, captchaConsumed: true, errors: { message: 'نشست نامعتبر ، کاربری لاگین نکرده' } }
   }
 
   try {
@@ -194,18 +200,19 @@ export async function deleteStoreAction(prevState: StoreActionState, formData: F
       .limit(1)
 
     if (existingStore.length === 0) {
-      return { success: false, errors: { message: 'فروشگاهی برای این کاربر یافت نشد' } }
+      return { success: false, captchaConsumed: true, errors: { message: 'فروشگاهی برای این کاربر یافت نشد' } }
     }
 
     const store = existingStore[0]
 
-    await db
-      .update(users)
-      .set({ store_active: false })
-      .where(and(eq(users.id, userId)))
+    // حذف کاربر و فروشگاه باید یکپارچه باشد، وگرنه ممکن است پرچم کاربر صاف شود
+    // ولی رکورد فروشگاه باقی بماند (یا برعکس)
+    await db.transaction(async (tx) => {
+      await tx.update(users).set({ store_active: false }).where(eq(users.id, userId))
+      await tx.delete(stores).where(eq(stores.id, store.id))
+    })
 
-    await db.delete(stores).where(eq(stores.id, store.id))
-
+    // فایل‌ها فقط پس از حذف موفق رکورد پاک می‌شوند
     await deleteStoreImage(store.store_logo)
     await deleteStoreImage(store.store_header_banner)
     await deleteStoreImage(store.payment_receipt)
@@ -217,6 +224,6 @@ export async function deleteStoreAction(prevState: StoreActionState, formData: F
     return { success: true }
   } catch (error) {
     console.error('Delete store error:', error)
-    return { success: false, errors: { message: 'خطا در ارتباط با سرور' } }
+    return { success: false, captchaConsumed: true, errors: { message: 'خطا در ارتباط با سرور' } }
   }
 }

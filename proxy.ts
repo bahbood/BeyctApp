@@ -5,7 +5,7 @@ import { decryptSession } from './app/(Auth)/lib/session'
 
 // 1. Specify protected and public routes
 // توجه : مسیرها باید URL باشند نه مسیر فایل سیستم (route group در URL ظاهر نمیشود)
-const admin_ProtectedRoutes:string[] = ['/users']
+const admin_ProtectedRoutes:string[] = ['/users', '/admin']
 const store_ProtectedRoutes:string[] = ['/myStore', '/storeProfile', '/productsList']
 const newsAgency_ProtectedRoutes:string[] = []
 const services_ProtectedRoutes:string[] = []
@@ -40,6 +40,13 @@ export default async function proxy(req: NextRequest) {
       // 4. Redirect unauthenticated users from protected routes
       if (isProtectedRoute && !session?.userId) {
         console.log(" *  > proxy : Redirect unauthenticated user to home")
+        return NextResponse.redirect(new URL('/', req.nextUrl))
+      }
+
+      // 4.1 مسیرهای مدیریتی فقط برای نقش admin
+      // (بررسی نقش در خود صفحه/اکشن سمت سرور هم تکرار می‌شود تا لایه دفاعی داشته باشیم)
+      if (is_Admin_ProtectedRoute && session?.role !== 'admin') {
+        console.log(" *  > proxy : Redirect non-admin user to home")
         return NextResponse.redirect(new URL('/', req.nextUrl))
       }
 

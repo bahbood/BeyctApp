@@ -15,6 +15,12 @@ const MAX_ABOUT_LENGTH = 2000
 
 export type StoreProfileState = {
   success: boolean
+  /**
+   * آیا کد امنیتی در سرور مصرف شده است؟
+   * کد امنیتی فقط در صورت صحت حذف می‌شود، بنابراین اگر این مقدار true باشد
+   * فرم باید یک کد جدید بارگذاری کند وگرنه کاربر در تلاش بعدی همیشه خطا می‌بیند.
+   */
+  captchaConsumed?: boolean
   errors?: {
     store_desc?: string
     store_about?: string
@@ -66,6 +72,8 @@ export async function storeProfileAction(
   if (store_mobile && !/^\d{11}$/.test(store_mobile)) errors.store_mobile = 'موبایل باید ۱۱ رقم باشد'
   if (store_shaba_number && !/^\d{22}$/.test(store_shaba_number)) errors.store_shaba_number = 'شماره شبا باید ۲۲ رقم باشد'
 
+  // اعتبارسنجی فیلدها پیش از کد امنیتی تا کاربر بابت خطای ساده مجبور به
+  // حل دوباره کد امنیتی نشود
   if (Object.keys(errors).length > 0) {
     return { success: false, errors, values }
   }
@@ -79,33 +87,35 @@ export async function storeProfileAction(
     return { success: false, errors: { userCaptcha: 'کد امنیتی بدرستی وارد نشده' }, values }
   }
 
+  // از این لحظه کد امنیتی مصرف شده است
+  const consumed = { captchaConsumed: true } as const
+
   const userinfo = await getUserFromSession()
   const userId = userinfo?.id
 
   if (!userId) {
-    return { success: false, errors: { message: 'نشست نامعتبر ، کاربری لاگین نکرده' }, values }
+    return { success: false, ...consumed, errors: { message: 'نشست نامعتبر ، کاربری لاگین نکرده' }, values }
   }
 
   const store = await getStoreByUserId(userId)
 
   if (!store) {
-    return { success: false, errors: { message: 'فروشگاهی برای این کاربر یافت نشد' }, values }
+    return { success: false, ...consumed, errors: { message: 'فروشگاهی برای این کاربر یافت نشد' }, values }
   }
 
-  try {
-    let store_logo = store.store_logo
-    let store_header_banner = store.store_header_banner
+  // تصاویر جدید ابتدا روی دیسک ذخیره می‌شوند، ولی فایل قبلی تنها پس از
+  // موفقیت به‌روزرسانی دیتابیس حذف می‌شود. در غیر این صورت یک خطای دیتابیس
+  // باعث می‌شد تصویر قبلی از دیسک پاک شود ولی نام آن در دیتابیس باقی بماند.
+  let newLogo: string | null = null
+  let newBanner: string | null = null
 
+  try {
     if (logoFile && logoFile.size > 0) {
-      const newLogo = await saveStoreImage(logoFile, 'logo', store.id)
-      await deleteStoreImage(store.store_logo)
-      store_logo = newLogo
+      newLogo = await saveStoreImage(logoFile, 'logo', store.id)
     }
 
     if (bannerFile && bannerFile.size > 0) {
-      const newBanner = await saveStoreImage(bannerFile, 'banner', store.id)
-      await deleteStoreImage(store.store_header_banner)
-      store_header_banner = newBanner
+      newBanner = await saveStoreImage(bannerFile, 'banner', store.id)
     }
 
     await db
@@ -117,24 +127,38 @@ export async function storeProfileAction(
         store_tell: store_tell || null,
         store_mobile: store_mobile || null,
         store_shaba_number: store_shaba_number || null,
-        store_logo,
-        store_header_banner,
+        store_logo: newLogo ?? store.store_logo,
+        store_header_banner: newBanner ?? store.store_header_banner,
       })
       .where(eq(stores.id, store.id))
-
-    revalidatePath('/myStore')
-    revalidatePath('/storeProfile')
-
-    return { success: true, values }
   } catch (error) {
     console.error('Store profile update error:', error)
 
+    // فایل‌های تازه ذخیره‌شده که در دیتابیس ثبت نشدند پاک می‌شوند
+    await deleteStoreImage(newLogo)
+    await deleteStoreImage(newBanner)
+
     if (error instanceof StoreImageError) {
-      return { success: false, errors: { message: error.message }, values }
+      const field = logoFile && logoFile.size > 0 ? 'store_logo' : 'store_header_banner'
+      return {
+        success: false,
+        ...consumed,
+        errors: { [field]: error.message } as NonNullable<StoreProfileState>['errors'],
+        values,
+      }
     }
 
-    return { success: false, errors: { message: 'خطا در ارتباط با سرور' }, values }
+    return { success: false, ...consumed, errors: { message: 'خطا در ذخیره اطلاعات فروشگاه' }, values }
   }
+
+  // فایل‌های قبلی فقط بعد از موفقیت به‌روزرسانی حذف می‌شوند
+  if (newLogo && store.store_logo) await deleteStoreImage(store.store_logo)
+  if (newBanner && store.store_header_banner) await deleteStoreImage(store.store_header_banner)
+
+  revalidatePath('/myStore')
+  revalidatePath('/storeProfile')
+
+  return { success: true, values }
 }
 
 /** حذف لوگو یا بنر فعلی فروشگاه */
@@ -153,12 +177,14 @@ export async function deleteStoreImageAction(kind: 'logo' | 'banner'): Promise<{
   }
 
   try {
+    // ابتدا مرجع فایل در دیتابیس پاک می‌شود و سپس فایل حذف می‌شود، تا در صورت
+    // خطای دیتابیس فایل بلااستفاده‌ای در دیسک باقی نماند
     if (kind === 'logo') {
-      await deleteStoreImage(store.store_logo)
       await db.update(stores).set({ store_logo: null }).where(eq(stores.id, store.id))
+      await deleteStoreImage(store.store_logo)
     } else {
-      await deleteStoreImage(store.store_header_banner)
       await db.update(stores).set({ store_header_banner: null }).where(eq(stores.id, store.id))
+      await deleteStoreImage(store.store_header_banner)
     }
 
     revalidatePath('/storeProfile')
@@ -167,6 +193,6 @@ export async function deleteStoreImageAction(kind: 'logo' | 'banner'): Promise<{
     return { success: true }
   } catch (error) {
     console.error('Delete store image error:', error)
-    return { success: false, message: 'خطا در ارتباط با سرور' }
+    return { success: false, message: 'خطا در حذف تصویر' }
   }
 }
