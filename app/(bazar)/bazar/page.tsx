@@ -1,11 +1,11 @@
 import { db } from '@/app/db'
-import { stores, products } from '@/app/db/schema'
-import { and, eq, lt, gt, sql } from 'drizzle-orm'
+import { stores, products, productImages } from '@/app/db/schema'
+import { and, eq, gt, isNull, or, asc, inArray } from 'drizzle-orm'
+import { productImageUrl } from '../(StoresManagment)/lib/productImagesDb'
 export const dynamic = 'force-dynamic'
 
 async function getActiveProducts() {
-  const now = new Date()
-  return await db
+  const productList = await db
     .select({
       id: products.id,
       product_name: products.product_name,
@@ -23,14 +23,37 @@ async function getActiveProducts() {
       and(
         eq(products.on_air, true),
         eq(products.is_outofaccess, false),
+        // محصول بایگانی‌شده (تاریخ انقضا گذشته) نمایش داده نمی‌شود
+        or(isNull(products.archive_at), gt(products.archive_at, new Date())),
         eq(stores.on_air, true),
         eq(stores.is_outofaccess, false),
-        lt(stores.expired_at, sql`NOW()`),
+        // فروشگاه منقضی‌شده نمایش داده نمی‌شود
+        gt(stores.expired_at, new Date()),
       )
     )
     .orderBy(products.created_at)
-}
 
+  const firstImage = new Map<number, string>()
+
+  if (productList.length > 0) {
+    const images = await db
+      .select()
+      .from(productImages)
+      .where(inArray(productImages.product_id, productList.map((product) => product.id)))
+      .orderBy(asc(productImages.position))
+
+    for (const image of images) {
+      if (!firstImage.has(image.product_id)) {
+        firstImage.set(image.product_id, productImageUrl(image.image_name))
+      }
+    }
+  }
+
+  return productList.map((product) => ({
+    ...product,
+    image_url: firstImage.get(product.id) ?? '',
+  }))
+}
 export default async function BazarPage() {
   const productList = await getActiveProducts()
 
@@ -52,8 +75,14 @@ export default async function BazarPage() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {productList.map((product) => (
             <div key={product.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-              <div className="aspect-square bg-gray-100 flex items-center justify-center">
-                <span className="text-gray-400 text-4xl">🛍️</span>
+              <div className="aspect-square bg-gray-100 flex items-center justify-center overflow-hidden">
+                {product.image_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={product.image_url} alt={product.product_name}
+                    className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-gray-400 text-4xl">🛍️</span>
+                )}
               </div>
               <div className="p-3 flex flex-col gap-1">
                 <span className="text-xs text-orange-600 font-medium truncate">{product.store_name}</span>

@@ -39,5 +39,8 @@ Ordered workflow: `db:generate` → `db:migrate` (or `db:push` for dev).
 - **Server actions**: Files use `'use server'` directive. Auth actions live in `app/(Auth)/components/action/`.
 - **DB triggers**: Raw SQL in `app/db/triggers.ts` — creates `update_updated_at_column()` function and `sync_products_outofaccess` trigger.
 - **Slide images**: Stored in `public/slideImages/`. Only `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp` allowed, max 5 MB.
+- **Product images**: Max 3 per product, each **max 300 KB**, rows in `product_images` table (`position` 0-2), files in `public/storeImages/productsIMGs/`. Filenames are generated server-side as `{userId}_{YYYYMMDD}_{9-char code}{ext}` where the date segment is **Jalali** (e.g. `10_14050331_a56bcd8e9`) — never reuse the original upload name. Helper: `app/(bazar)/(StoresManagment)/lib/productImagesDb.ts`. `next.config.ts` sets `experimental.serverActions.bodySizeLimit: "2mb"` because the 1 MB default cannot carry 3 × 300 KB uploads.
+- **Jalali dates**: Form date inputs use `PersianDateCMP` (`YYYY/MM/DD`). Convert with `app/lib/jalaliDate.ts` (`jalaaliInputToDate`, `toJalaaliInput`, `jalaaliStamp`) — never store Jalali strings in `timestamp` columns.
+- **Product dates**: `registered_at` = registration date (editable), `archive_at` = expiration date; once `archive_at` is in the past the product is hidden from the storefront. `on_air` = store owner's show/hide toggle.
 - **Seed data**: `npm run db:addSeed` — inserts admin user (`admin`/`123456`) and sample slides.
 - **No test framework** detected — no `jest`, `vitest`, or `playwright` in dependencies.

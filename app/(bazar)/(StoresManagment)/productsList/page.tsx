@@ -1,9 +1,11 @@
 import { db } from '@/app/db'
-import { products } from '@/app/db/schema'
-import { eq } from 'drizzle-orm'
+import { products, productImages } from '@/app/db/schema'
+import { eq, asc, inArray } from 'drizzle-orm'
 import { cookies } from 'next/headers'
 import { decryptSession } from '@/app/(Auth)/lib/session'
 import { getStoreByUserId } from '../../lib/getStoreByUserId'
+import { productImageUrl } from '../lib/productImagesDb'
+import { toJalaaliInput } from '@/app/lib/jalaliDate'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import ToggleButton from './ToggleButton'
@@ -27,12 +29,30 @@ async function getStoreProducts() {
     .where(eq(products.store_id, store.id))
     .orderBy(products.created_at)
 
-  return { store, products: productList }
+  const imagesByProduct = new Map<number, string>()
+
+  if (productList.length > 0) {
+    const images = await db
+      .select()
+      .from(productImages)
+      .where(inArray(productImages.product_id, productList.map((product) => product.id)))
+      .orderBy(asc(productImages.position))
+
+    for (const image of images) {
+      if (!imagesByProduct.has(image.product_id)) {
+        imagesByProduct.set(image.product_id, productImageUrl(image.image_name))
+      }
+    }
+  }
+
+  return { store, products: productList, imagesByProduct }
 }
 
 export default async function ProductsListPage() {
   const data = await getStoreProducts()
   if (!data) redirect('/')
+
+  const now = new Date()
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -57,34 +77,59 @@ export default async function ProductsListPage() {
           </div>
         ) : (
           <div className="flex flex-col gap-2">
-            {data.products.map((product) => (
-              <div key={product.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 flex items-center gap-3">
-                <div className="flex-1 flex flex-col gap-0.5 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className={`size-2 rounded-full ${product.on_air ? 'bg-green-500' : 'bg-gray-300'}`} />
-                    <span className="text-sm font-semibold text-gray-800 truncate">{product.product_name}</span>
-                    {product.is_outofaccess && (
-                      <span className="text-[10px] text-red-500 border border-red-200 rounded px-1">عدم دسترسی</span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3 text-[10px] text-gray-500">
-                    <span>قیمت: {Number(product.price).toLocaleString()} تومان</span>
-                    {Number(product.off_percent) > 0 && (
-                      <span>{product.off_percent}% تخفیف</span>
-                    )}
-                    <span>موجودی: {product.inventory}</span>
-                  </div>
-                </div>
+            {data.products.map((product) => {
+              const archived = !!product.archive_at && product.archive_at <= now
+              const thumb = data.imagesByProduct.get(product.id)
 
-                <div className="flex items-center gap-2 shrink-0">
-                  <ToggleButton productId={product.id} isOnAir={product.on_air ?? false} />
-                  <Link href={`/productsList/${product.id}/edit`}
-                    className="text-[10px] text-sky-600 hover:text-sky-800 border border-sky-200 rounded px-2 py-1">
-                    ویرایش
-                  </Link>
+              return (
+                <div key={product.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 flex items-center gap-3">
+                  <div className="size-14 shrink-0 bg-gray-100 rounded border border-gray-200 overflow-hidden flex items-center justify-center">
+                    {thumb ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={thumb} alt={product.product_name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-gray-300 text-xl">🛍️</span>
+                    )}
+                  </div>
+
+                  <div className="flex-1 flex flex-col gap-0.5 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`size-2 rounded-full ${product.on_air ? 'bg-green-500' : 'bg-gray-300'}`} />
+                      <span className="text-sm font-semibold text-gray-800 truncate">{product.product_name}</span>
+                      {product.is_outofaccess && (
+                        <span className="text-[10px] text-red-500 border border-red-200 rounded px-1">عدم دسترسی</span>
+                      )}
+                      {archived && (
+                        <span className="text-[10px] text-gray-500 border border-gray-300 rounded px-1">بایگانی‌شده</span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-3 text-[10px] text-gray-500 flex-wrap">
+                      <span>قیمت: {Number(product.price).toLocaleString()} تومان</span>
+                      {Number(product.off_percent) > 0 && (
+                        <span>{product.off_percent}% تخفیف</span>
+                      )}
+                      <span>موجودی: {product.inventory}</span>
+                    </div>
+
+                    <div className="flex items-center gap-3 text-[10px] text-gray-400 flex-wrap">
+                      <span>ثبت: {toJalaaliInput(product.registered_at) || '—'}</span>
+                      <span>
+                        انقضا: {product.archive_at ? toJalaaliInput(product.archive_at) : 'بدون تاریخ'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <ToggleButton productId={product.id} isOnAir={product.on_air ?? false} />
+                    <Link href={`/productsList/${product.id}/edit`}
+                      className="text-[10px] text-sky-600 hover:text-sky-800 border border-sky-200 rounded px-2 py-1">
+                      ویرایش
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
 

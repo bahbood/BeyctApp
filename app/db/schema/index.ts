@@ -4,5 +4,6 @@
 export * from './users';
 export * from './stores';
 export * from "./products";
+export * from "./productImages";
 export * from './slides';
 export * from './messages';

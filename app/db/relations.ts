@@ -1,6 +1,6 @@
 // app/db/relations.ts
 import { relations } from "drizzle-orm";
-import { stores, users ,products } from "./schema";
+import { stores, users ,products, productImages } from "./schema";
 
 
 // روابط بین جداول
@@ -21,9 +21,19 @@ export const storesRelations = relations(stores, ({ many, one }) => ({
 
 
 
-export const productsRelations = relations(products, ({ one }) => ({
+export const productsRelations = relations(products, ({ many, one }) => ({
   store: one(stores, {
     fields: [products.store_id],
     references: [stores.id],
+  }),
+
+  images: many(productImages),
+}));
+
+
+export const productImagesRelations = relations(productImages, ({ one }) => ({
+  product: one(products, {
+    fields: [productImages.product_id],
+    references: [products.id],
   }),
 }));

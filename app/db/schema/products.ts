@@ -15,6 +15,9 @@ export const products = pgTable('products', {
  // اگر مقدار داشته باشد، پس از این تاریخ محصول نمایش داده نمی‌شود.
   archive_at:  timestamp('archive_at'),
 
+  // تاریخ ثبت محصول (قابل ویرایش توسط مدیر فروشگاه)
+  registered_at:  timestamp('registered_at').defaultNow().notNull(),
+
   created_at:  timestamp('created_at').defaultNow().notNull(),
   updated_at:  timestamp('updated_at').defaultNow().notNull(),
 

@@ -1,19 +1,21 @@
 import { db } from '@/app/db'
-import { products } from '@/app/db/schema'
-import { eq, and } from 'drizzle-orm'
+import { products, productImages } from '@/app/db/schema'
+import { eq, and, asc } from 'drizzle-orm'
 import {  getUserFromSession } from '@/app/(Auth)/lib/session'
 import { getStoreByUserId } from '../../../../lib/getStoreByUserId'
 import {  redirect } from 'next/navigation'
 import EditProductForm from './EditProductForm'
+import { toJalaaliInput } from '@/app/lib/jalaliDate'
+import { productImageUrl } from '../../../lib/productImagesDb'
 
 async function getProduct(productId: number) {
- const userinfo=await getUserFromSession()
+  const userinfo=await getUserFromSession()
  
    const userId = userinfo?.id
- 
+  
    if( !userId )
    {
-     return { success: false, errors: { message: '    !!! نشست نامعتبر ، کاربری لاگین نکرده' },  }
+     return null
    }
    
 
@@ -26,7 +28,19 @@ async function getProduct(productId: number) {
     .where(and(eq(products.id, productId), eq(products.store_id, store.id)))
     .limit(1)
 
-  return result[0] || null
+  const product = result[0] || null
+  if (!product) return null
+
+  const images = await db
+    .select()
+    .from(productImages)
+    .where(eq(productImages.product_id, product.id))
+    .orderBy(asc(productImages.position))
+
+  return {
+    ...product,
+    images: images.map((image) => ({ ...image, url: productImageUrl(image.image_name) })),
+  }
 }
 
 export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
@@ -43,7 +57,13 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
         </div>
       </header>
       <main className="max-w-2xl mx-auto px-4 py-6">
-        <EditProductForm product={product} />
+        <EditProductForm
+          product={{
+            ...product,
+            registered_at_input: toJalaaliInput(product.registered_at),
+            archive_at_input: toJalaaliInput(product.archive_at),
+          }}
+        />
       </main>
     </div>
   )

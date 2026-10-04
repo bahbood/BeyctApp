@@ -1,6 +1,7 @@
 import {  getUserFromSession } from '@/app/(Auth)/lib/session'
 import { redirect } from 'next/navigation'
 import AddProductForm from './AddProductForm'
+import { toJalaaliInput } from '@/app/lib/jalaliDate'
 export const dynamic = 'force-dynamic'
 
 async function checkStoreExist() {
@@ -26,7 +27,7 @@ export default async function AddProductPage() {
         </div>
       </header>
       <main className="max-w-2xl mx-auto px-4 py-6">
-        <AddProductForm />
+        <AddProductForm defaultRegisteredAt={toJalaaliInput(new Date())} />
       </main>
     </div>
   )
