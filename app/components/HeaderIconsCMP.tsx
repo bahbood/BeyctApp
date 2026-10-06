@@ -22,6 +22,20 @@ export  function HeaderIconsCMP({className}:{className?:string}){
                 
             </Link>
 
+
+             <Link href={"/news"} className={`${pathname=="/news"?"":"group"}   cursor-pointer select-none`}>
+             
+                <div className="flex px-2 gap-1 items-center select-none">
+                    <div className={`w-2 h-2 group-hover:bg-orange-600 rounded-full mx-auto mt-px duration-300 ${pathname=="/news" ? " bg-sky-500 " : " bg-gray-100 "}`}></div>
+                    <svg xmlns="http://www.w3.org/1000/svg" fill="none" viewBox="0 0 24 24" 
+            className="size-4 md:size-4 lg:size-5 stroke-[1.5px] stroke-gray-400 group-hover:stroke-orange-600 transition duration-400 ease-in-out select-none">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 0 1-2.25 2.25M16.5 7.5V18a2.25 2.25 0 0 0 2.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 0 0 2.25 2.25h13.5M6 7.5h3v3H6v-3Z" />
+            </svg>
+            <span className="mt-0.5 text-gray-500 group-hover:text-orange-600 transition duration-400 ease-in-out text-[10px] md:text-[12px] select-none"> خبرنامه </span>
+                </div>
+                
+            </Link>
+
              <Link href={"/bazar"} className={`${pathname=="/bazar"?"":"group"}   cursor-pointer select-none`}>
              
                 <div className="flex px-2 gap-1 items-center select-none">
