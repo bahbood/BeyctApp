@@ -11,3 +11,5 @@ export * from './newsAgencies';
 export * from './news';
 export * from './newsImages';
 export * from './newsLikes';
+export * from './serviceCategories';
+export * from './services';

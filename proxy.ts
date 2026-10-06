@@ -14,10 +14,13 @@ const newsAgency_ProtectedRoutes:string[] = [
   '/newsList',
   '/addNews',
 ]
-const services_ProtectedRoutes:string[] = []
+// بخش خدمات (بانک مشاغل) - فقط برای کاربران وارد شده
+// (بررسی مالکیت خدمت در خود صفحه/اکشن نیز انجام می شود)
+const services_ProtectedRoutes:string[] = ['/myServices']
 // مسیرهایی که فقط کاربران وارد شده سایت می توانند به آن ها دسترسی داشته باشند
 const loggedIn_ProtectedRoutes:string[] = ['/messages']
-const publicRoutes :string[] = ['/','/bazar']
+// صفحات عمومی که بدون لاگین هم قابل مشاهده هستند
+const publicRoutes :string[] = ['/','/bazar','/asnaf']
 
 export default async function proxy(req: NextRequest) {
   // 2. Check if the current route is protected or public

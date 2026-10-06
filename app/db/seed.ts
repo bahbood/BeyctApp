@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { db } from './index';
 import {  users } from './schema';
 import { slides } from './schema/slides';
+import { serviceCategories } from './schema/serviceCategories';
 
 async function main() {
   console.log('🚀 Starting database seeding...');
@@ -62,9 +63,37 @@ async function main() {
 
 
 
+  async function seedData_serviceCategories() {
+    try {
+      // دسته بندی های بخش خدمات (بانک مشاغل)
+      const result = await db.insert(serviceCategories).values([
+        { name: 'تاسیسات ساختمان' },
+        { name: 'ساختمان و بازسازی' },
+        { name: 'تعمیرات لوازم خانگی' },
+        { name: 'حمل و نقل و باربری' },
+        { name: 'نرم‌افزار و IT' },
+        { name: 'آموزش و تدریس' },
+        { name: 'سلامت و درمان' },
+        { name: 'زیبایی و آرایشگری' },
+        { name: 'حقوقی و مشاوره' },
+        { name: 'تبلیغات و بازاریابی' },
+        { name: 'نظافت و قالیشویی' },
+        { name: 'فروش عمده' },
+      ]).onConflictDoNothing({ target: serviceCategories.name });
+
+      console.log('✅ Service categories inserted:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ Error inserting service categories:', error);
+      throw error;
+    }
+  }
+
+
   try {
     await seedEssentialData_adminUser(); // مهم: صبر کن تا کامل بشه
     await  seedData_slides();
+    await seedData_serviceCategories();
     console.log('🎉seed data successfully !');
   } catch (error) {
     console.error('💥 Seeding failed:', error);
