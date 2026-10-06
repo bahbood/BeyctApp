@@ -41,7 +41,7 @@ export interface SideMenuHandlerRef{
 
 export default function SideMenu({ref }: {ref?:Ref<SideMenuHandlerRef>}) {
 
-const {logInPage_toggleShow,logOutPage_toggleShow ,ProfilePage_toggleShow,RegisterPage_toggleShow, user } = useFlyoutPage()
+const {logInPage_toggleShow,logOutPage_toggleShow ,RegisterPage_toggleShow, user } = useFlyoutPage()
   const currentPath = usePathname();
  // const { user } = useFlyoutPage();
 
@@ -196,6 +196,7 @@ const {logInPage_toggleShow,logOutPage_toggleShow ,ProfilePage_toggleShow,Regist
                 <label className='block w-full px-2 py-2 bg-sky-300 text-white  text-xs'>مدیریت سایت</label>
                 <div className='flex flex-col w-full mx-auto gap-3 px-3 py-2  '>
                   <Link className='text-xs hover:text-orange-600' href='/admin/stores' onClick={() => setIsOpen(false)}>مدیریت فروشگاه‌ها و درخواست فعالسازی</Link>
+                  <Link className='text-xs hover:text-orange-600' href='/admin/newsAgencies' onClick={() => setIsOpen(false)}>مدیریت خبرگزاری‌ها و درخواست فعالسازی</Link>
                   <Link className='text-xs hover:text-orange-600' href='/users' onClick={() => setIsOpen(false)}>مدیریت کاربران</Link>
                   <Link className='text-xs hover:text-orange-600' href='/slides' onClick={() => setIsOpen(false)}>مدیریت اسلاید ها </Link>
                 </div>
@@ -219,8 +220,10 @@ const {logInPage_toggleShow,logOutPage_toggleShow ,ProfilePage_toggleShow,Regist
               <div className=' w-full  bg-gray-200'>
                 <label className='block w-full px-2 py-2 bg-sky-300 text-white  text-xs'>مدیریت  رسانه خبری :</label>
                 <div className='flex flex-col w-full mx-auto gap-3 px-3 py-2  '>
-                <Link className='text-xs hover:text-orange-600' href='/newsAgencyProfile' onClick={()=>setIsOpen(false)}>مدیریت خبرنامه </Link>
-                <Link className='text-xs hover:text-orange-600' href='/newsAgencyActivation' onClick={()=>setIsOpen(false)} >فعال سازی خبرنامه</Link>
+                <Link className='text-xs hover:text-orange-600' href='/myNewsAgency' onClick={()=>setIsOpen(false)}>خبرگزاری من </Link>
+                <Link className='text-xs hover:text-orange-600' href='/newsList' onClick={()=>setIsOpen(false)}>مدیریت اخبار </Link>
+                <Link className='text-xs hover:text-orange-600' href='/addNews' onClick={()=>setIsOpen(false)}>ثبت خبر جدید </Link>
+                <Link className='text-xs hover:text-orange-600' href='/newsAgencyProfile' onClick={()=>setIsOpen(false)}>پروفایل خبرگزاری </Link>
                 </div>
               </div>
               )}
@@ -247,7 +250,7 @@ const {logInPage_toggleShow,logOutPage_toggleShow ,ProfilePage_toggleShow,Regist
                     <Link className='text-xs hover:text-orange-600' href='/' onClick={()=>setIsOpen(false)} >درخواست فعال سازی خدمات و مشاغل</Link>
                   }
                    {user?.news_agency_active==false && 
-                      <Link className='text-xs hover:text-orange-600' href='/' onClick={()=>setIsOpen(false)}> درخواست فعال سازی خبرگزاری </Link>
+                      <Link className='text-xs hover:text-orange-600' href='/myNewsAgency' onClick={()=>setIsOpen(false)}> درخواست فعال سازی خبرگزاری </Link>
                   }
                   
                 </div>

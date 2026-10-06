@@ -1,19 +1,23 @@
 // proxy.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { getSessionFromAction } from './app/(Auth)/lib/session-action'
 import { decryptSession } from './app/(Auth)/lib/session'
 
 // 1. Specify protected and public routes
 // توجه : مسیرها باید URL باشند نه مسیر فایل سیستم (route group در URL ظاهر نمیشود)
 const admin_ProtectedRoutes:string[] = ['/users', '/admin']
 const store_ProtectedRoutes:string[] = ['/myStore', '/storeProfile', '/productsList']
-const newsAgency_ProtectedRoutes:string[] = []
+// بخش مدیریت خبرگزاری - فقط برای کاربران وارد شده
+// (بررسی مالکیت و وضعیت انتشار در خود صفحه/اکشن انجام می شود)
+const newsAgency_ProtectedRoutes:string[] = [
+  '/myNewsAgency',
+  '/newsAgencyProfile',
+  '/newsList',
+  '/addNews',
+]
 const services_ProtectedRoutes:string[] = []
 // مسیرهایی که فقط کاربران وارد شده سایت می توانند به آن ها دسترسی داشته باشند
 const loggedIn_ProtectedRoutes:string[] = ['/messages']
 const publicRoutes :string[] = ['/','/bazar']
-
-const AdminPathes = ["/newsAgenciesList"]
 
 export default async function proxy(req: NextRequest) {
   // 2. Check if the current route is protected or public
@@ -27,42 +31,25 @@ export default async function proxy(req: NextRequest) {
  
     const isProtectedRoute = is_Admin_ProtectedRoute || is_store_ProtectedRoute || is_NewsAgency_ProtectedRoute || is_services_ProtectedRoute || is_loggedIn_ProtectedRoute
   const isPublicRoute = publicRoutes.includes(path)
-  
-  console.log(' *  > proxy :  path :', path)
-  
+
   // فقط برای مسیرهایی که نیاز به بررسی سشن دارند
   if (isPublicRoute || isProtectedRoute) {
     try {
-      
-     const sessionCookie = req.cookies.get('session')?.value
-     const session = await decryptSession(sessionCookie)
+      const sessionCookie = req.cookies.get('session')?.value
+      const session = await decryptSession(sessionCookie)
 
       // 4. Redirect unauthenticated users from protected routes
       if (isProtectedRoute && !session?.userId) {
-        console.log(" *  > proxy : Redirect unauthenticated user to home")
         return NextResponse.redirect(new URL('/', req.nextUrl))
       }
 
       // 4.1 مسیرهای مدیریتی فقط برای نقش admin
       // (بررسی نقش در خود صفحه/اکشن سمت سرور هم تکرار می‌شود تا لایه دفاعی داشته باشیم)
       if (is_Admin_ProtectedRoute && session?.role !== 'admin') {
-        console.log(" *  > proxy : Redirect non-admin user to home")
         return NextResponse.redirect(new URL('/', req.nextUrl))
       }
-
-      // 5. Update session only if user is authenticated
-      // if (session?.userId) {
-      //   const updateResponse = await updateSession()
-      //   if (updateResponse) {
-      //     console.log(" *  > proxy : Session updated successfully")
-      //     return updateResponse // مهم: response برمی‌گرداند
-      //   }
-      // }
-
-      
-      
     } catch (error) {
-      console.error("Session error:", error)
+      console.error('Session error:', error)
       // در صورت خطا در سشن، کاربر را به خانه بفرست
       if (isProtectedRoute) {
         return NextResponse.redirect(new URL('/', req.nextUrl))
@@ -70,7 +57,6 @@ export default async function proxy(req: NextRequest) {
     }
   }
 
-  console.log(" *  > proxy :  No session update needed")
   return NextResponse.next()
 }
 

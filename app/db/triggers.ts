@@ -64,6 +64,34 @@ EXECUTE FUNCTION update_updated_at_column();
 
 
 -- ==========================================
+-- news_agencies
+-- ==========================================
+
+DROP TRIGGER IF EXISTS trigger_news_agencies_update_updated_at
+ON news_agencies;
+
+CREATE TRIGGER trigger_news_agencies_update_updated_at
+BEFORE UPDATE
+ON news_agencies
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
+
+
+-- ==========================================
+-- news
+-- ==========================================
+
+DROP TRIGGER IF EXISTS trigger_news_update_updated_at
+ON news;
+
+CREATE TRIGGER trigger_news_update_updated_at
+BEFORE UPDATE
+ON news
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
+
+
+-- ==========================================
 -- messages
 -- ==========================================
 
@@ -121,5 +149,51 @@ AFTER UPDATE OF is_outofaccess
 ON stores
 FOR EACH ROW
 EXECUTE FUNCTION sync_products_outofaccess();
+
+`;
+
+
+/* ============================================================
+   همگام سازی وضعیت دسترسی اخبار با خبرگزاری
+   ============================================================ */
+
+export const syncNewsOutOfAccess = sql`
+
+-- ==========================================
+-- Function
+-- ==========================================
+
+CREATE OR REPLACE FUNCTION sync_news_outofaccess()
+RETURNS TRIGGER AS $$
+BEGIN
+
+    IF NEW.is_outofaccess IS DISTINCT FROM OLD.is_outofaccess THEN
+
+        UPDATE news
+        SET is_outofaccess = NEW.is_outofaccess
+        WHERE
+            news_agency_id = NEW.id
+            AND is_outofaccess IS DISTINCT FROM NEW.is_outofaccess;
+
+    END IF;
+
+    RETURN NEW;
+
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- ==========================================
+-- Trigger
+-- ==========================================
+
+DROP TRIGGER IF EXISTS trigger_sync_news_outofaccess
+ON news_agencies;
+
+CREATE TRIGGER trigger_sync_news_outofaccess
+AFTER UPDATE OF is_outofaccess
+ON news_agencies
+FOR EACH ROW
+EXECUTE FUNCTION sync_news_outofaccess();
 
 `;
