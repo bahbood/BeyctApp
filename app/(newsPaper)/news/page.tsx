@@ -14,6 +14,7 @@ import Link from 'next/link'
 import LikeButton from './LikeButton'
 import NewsHeader from './NewsHeader'
 import { toJalaaliInput } from '@/app/lib/jalaliDate'
+import { div } from 'framer-motion/client'
 
 export const dynamic = 'force-dynamic'
 
@@ -60,15 +61,16 @@ export default async function PublicNewsPage({
                   key={item.id}
                   className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex flex-col gap-3"
                 >
-                  <div className="flex flex-wrap items-start gap-3">
+                  <div   className="flex flex-wrap   items-start gap-3
+                  landscape:w-full landscape:aspect-[9/3]
+                  portrait:w-full portrait:aspect-[3/9]
+                  ">
                     {thumb && (
-                      <Image
-                        src={thumb}
-                        alt={item.headline}
-                        width={96}
-                        height={96}
-                        className="w-24 h-24 object-cover rounded border border-gray-200 shrink-0"
+                      <div className="landscape:h-full portrait:w-full aspect-square flex-1 grow-0 shrink-0">
+                      <Image src={thumb} alt={item.headline} width={300} height={300}
+                        className="h-full w-full aspect-square  rounded border  border-gray-200 "
                       />
+                      </div>
                     )}
                     <div className="flex flex-col gap-1 flex-1 min-w-0">
                       <Link href={`/news/${item.id}`} className="text-sm font-semibold text-gray-800 hover:text-sky-700">
