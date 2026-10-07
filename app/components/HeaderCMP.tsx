@@ -17,11 +17,11 @@ export default function HeaderCMP( {className, unreadMessagesCount = 0}: {classN
     return (
         <div className={`${className}  `}>
            
-            <div className=" w-3/4  h-full flex items-center p-0 m-0 ">
+            <div className=" landscape:w-6/9 portrait:w-1/2  h-full flex items-center p-0 m-0 ">
                 <Image className="w-[60px]  " width={700} height={700} src="/logo/Bey-Logo-new-06-blue.svg" alt={"logo"} ></Image>
-                <HeaderIconsCMP className="landscape:flex portrait:hidden  ms-5"/>
+                <HeaderIconsCMP className="hidden md:flex  portrait:hidden  ms-5"/>
             </div>
-            <div dir="ltr" className=" w-1/4  h-full flex items-center gap-1  ">
+            <div dir="ltr" className=" landscape:w-3/9 portrait:w-1/2  h-full flex items-center gap-1  ">
 
 
                 <svg onClick={()=>sideMenu_toggleShow()} xmlns="http://www.w3.org/2000/svg" width="20mm" height="20mm" viewBox="0 0 20 20"

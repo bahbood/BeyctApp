@@ -46,33 +46,34 @@ export default async function PublicNewsPage({
     <div className="w-full">
       
 
-      <main className="w-full mx-auto px-4 py-6 flex flex-col gap-4">
+      <main className="w-full mx-auto landscape:px-4 landscape:py-6 flex flex-col gap-4">
         {rows.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center text-sm text-gray-500">
+          <div className="bg-white rounded-lg  border border-gray-200 p-8 text-center text-sm text-gray-500">
             {page > 1 ? 'این صفحه خبری ندارد' : 'در حال حاضر خبری منتشر نشده است'}
           </div>
         ) : (
-          <ul className="flex flex-col gap-3">
-            {rows.map((item) => {
+         
+           rows.map((item) => {
               const images = imagesMap.get(item.id) ?? []
               const thumb = images.length > 0 ? newsImageUrl(images[0].image_name) : ''
               return (
-                <li
-                  key={item.id}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex flex-col gap-3"
+                <div key={item.id}  className="flex  gap-3  bg-white landscape:border  portrait:border-y  border-gray-200
+                      landscape:flex-row landscape:h-full landscape:aspect-[9/3]
+                      portrait:flex-col portrait:w-full portrait:aspect-[3/5] "
                 >
-                  <div   className="flex flex-wrap   items-start gap-3
-                  landscape:w-full landscape:aspect-[9/3]
-                  portrait:w-full portrait:aspect-[3/9]
-                  ">
+                  
+                  <div   className="flex flex-wrap   items-start gap-3 landscape:h-full aspect-square portrait:w-full  ">
                     {thumb && (
-                      <div className="landscape:h-full portrait:w-full aspect-square flex-1 grow-0 shrink-0">
+                      
                       <Image src={thumb} alt={item.headline} width={300} height={300}
-                        className="h-full w-full aspect-square  rounded border  border-gray-200 "
+                        className="h-full w-full aspect-square   "
                       />
-                      </div>
+                     
                     )}
-                    <div className="flex flex-col gap-1 flex-1 min-w-0">
+                   
+                  </div>
+
+                   <div className="flex flex-col gap-1 flex-1 min-w-0 p-4">
                       <Link href={`/news/${item.id}`} className="text-sm font-semibold text-gray-800 hover:text-sky-700">
                         {item.headline}
                       </Link>
@@ -80,22 +81,23 @@ export default async function PublicNewsPage({
                       <span className="text-[10px] text-gray-400 mt-1">
                         {item.news_agency_name} • {toJalaaliInput(item.published_at)}
                       </span>
+                       <div className="flex items-center justify-between">
+                        <LikeButton
+                          newsId={item.id}
+                          initialLiked={likedIds.has(item.id)}
+                          initialCount={likeCounts.get(item.id) ?? 0}
+                        />
+                        <Link href={`/news/${item.id}`} className="text-[10px] text-sky-600 hover:text-sky-700">
+                          ادامه مطلب
+                        </Link>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <LikeButton
-                      newsId={item.id}
-                      initialLiked={likedIds.has(item.id)}
-                      initialCount={likeCounts.get(item.id) ?? 0}
-                    />
-                    <Link href={`/news/${item.id}`} className="text-[10px] text-sky-600 hover:text-sky-700">
-                      ادامه مطلب
-                    </Link>
-                  </div>
-                </li>
+
+                 
+                </div>
               )
-            })}
-          </ul>
+            })
+         
         )}
 
         {totalPages > 1 && (
