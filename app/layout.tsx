@@ -41,12 +41,10 @@ export default async function RootLayout({
 						landscape:w-full  landscape:lg:px-20 landscape:px-5  shrink-0
 						portrait:w-full    portrait:px-4  " />
 					
-						<div id="content"  className="landscape:w-[85%] portrait:w-full  mx-auto z-1 mt-2">
+						<div id="content"  className="landscape:w-full portrait:w-full  mx-auto z-1 mt-2">
 							{children} 
 						</div>
-						<footer className="w-full  shrink-0 pb-4 mt-12 z-1">
-							<div className="w-full h-[300px] shrink-0 bg-gray-400"></div>
-						</footer>
+						
 						{/* <div className="fixed top-0 w-full h-[50%]   bg-linear-180 from-sky-600  to-white -z-1"></div> */}
 					</FlyoutPageProvider>
 				

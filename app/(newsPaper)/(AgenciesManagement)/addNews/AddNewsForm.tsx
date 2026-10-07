@@ -17,7 +17,7 @@ export default function AddNewsForm({ canPublish = true }: { canPublish?: boolea
   // PersianDateCMP یک کامپوننت کنترل شده است → مقدار باید در state نگهداری شود
   // این state بین ارسال‌های فرم حفظ می شود (فرم بعد از ارسال ریست می شود ولی این مقدار باقی می ماند)
   const [publishedAt, setPublishedAt] = useState(toJalaaliInput(new Date()))
-  const [archiveAt, setArchiveAt] = useState('')
+  const [archiveAt, setArchiveAt] = useState(toJalaaliInput(new Date()))
 
   useEffect(() => {
     if (state?.success) {

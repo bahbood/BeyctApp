@@ -7,7 +7,8 @@ export default async function Home() {
   const slides = await getActiveSlides()
 
   return (
-    <div id="Home" className="flex w-full  justify-center gap-5  mx-auto  py-2 portrait:py-3">
+    <>
+    <div id="Home" className="flex landscape:w-[85%] portrait:w-full  justify-center gap-5  mx-auto  py-2 portrait:py-3">
 
       <div id="R" className="landscape:w-[20%] portrait:hidden h-full flex-none ">
         <div className="flex justify-center items-center w-full  overflow-hidden bg-gray-100  p-4" >
@@ -21,5 +22,9 @@ export default async function Home() {
       </div>
      
     </div>
+    <footer className="w-full  shrink-0 pb-4 mt-12 z-1">
+							<div className="w-full h-[300px] shrink-0 bg-gray-400"></div>
+		</footer>
+    </>
   );
 }

@@ -43,7 +43,7 @@ export default async function PublicNewsPage({
 
   return (
     <div className="w-full">
-      <NewsHeader />
+      
 
       <main className="w-full mx-auto px-4 py-6 flex flex-col gap-4">
         {rows.length === 0 ? (
