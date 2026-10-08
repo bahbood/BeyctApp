@@ -67,7 +67,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ id:
           </div>
 
           <footer className="flex items-center justify-between pt-2 border-t border-gray-100">
-            <LikeButton
+            <LikeButton className=''
               newsId={newsId}
               initialLiked={likedIds.has(newsId)}
               initialCount={likeCounts.get(newsId) ?? 0}
