@@ -3,13 +3,13 @@ import type { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'ManaMode online Shop',
+    name: 'Beydokht',
     short_name: 'M',
-    description: 'مانامد فروشگاه آنلاین',
+    description: 'پایگاه اطلاع رسانی بیدخت',
     start_url: '/',
     display: 'standalone', // مانند یک اپ مستقل به نظر می‌رسد
     background_color: '#ffffff',
-    theme_color: '#006aaa',
+    theme_color: '#6699FF',
     icons: [
       {
         src: '/icon-192x192.png',
