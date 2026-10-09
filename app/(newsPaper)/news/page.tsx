@@ -9,13 +9,11 @@ import {
   PUBLIC_NEWS_PAGE_SIZE,
 } from '@/app/(newsPaper)/lib/publicNewsDb'
 import { newsImageUrl } from '@/app/(newsPaper)/(AgenciesManagement)/lib/newsImagesDb'
-import Image from 'next/image'
 import Link from 'next/link'
 import LikeButton from './LikeButton'
-import NewsHeader from './NewsHeader'
 import { toJalaaliInput } from '@/app/lib/jalaliDate'
-import { div } from 'framer-motion/client'
 import CommentButton from './CommentButton'
+import { NewsCarousel } from '@/app/components/(newsCarousel)/newsCarousel'
 
 export const dynamic = 'force-dynamic'
 
@@ -56,29 +54,37 @@ export default async function PublicNewsPage({
          
            rows.map((item) => {
               const images = imagesMap.get(item.id) ?? []
+            
               const thumb = images.length > 0 ? newsImageUrl(images[0].image_name) : ''
               return (
-                <div id="newsContainer" key={item.id}  className="flex   bg-gray-50 landscape:border  portrait:border-y  border-gray-50 landscape:shadow-sm
-                      landscape:flex-row landscape:h-full landscape:aspect-[9/3]  landscape:gap-1  pb-0
-                      portrait:flex-col portrait:w-full portrait:overflow-hidden     portrait:gap-1  portrait:pb-3 " 
+                <div id="newsContainer" key={item.id}  className="flex   bg-gray-50 landscape:border  portrait:border-y  border-gray-50 
+                      landscape:flex-row landscape:h-full landscape:aspect-[9/3]  landscape:gap-1  landscape:shadow-sm pb-0 
+                      portrait:flex-col portrait:w-full portrait:overflow-hidden     portrait:gap-0 portrait:border-gray-200  portrait:pb-3 " 
                 >
                   
                   <div id="IMG"  className="flex flex-wrap   items-start gap-3 landscape:h-full aspect-square portrait:w-full  ">
-                    {thumb && (
+                    {/* {thumb && (
                       <Image src={thumb} alt={item.headline} width={300} height={300} className="h-full w-full aspect-square   " />
-                     )}
+                     )} */}
+                             <NewsCarousel key={images.length} className=" w-full  aspect-square  mx-auto" images={images}/>
+                     
                   </div>
 
-                  <div id="content" className="flex flex-col landscape:justify-between  flex-1 min-w-0 px-2 py-3">
+                  <div id="content" className="flex flex-col landscape:justify-between  flex-1 min-w-0 landscape:px-2 landscape:pt-2 landscape:pb-1 portrait:px-2 portrait:py-1 overflow-hidden">
 
-                     <div className="flex flex-col gap-1  landscape:order-1  portrait:order-2   ">
-                        <Link href={`/news/${item.id}`} className="text-sm font-semibold text-gray-800 hover:text-sky-700">
-                          {item.headline}
-                        </Link>
-                        {item.sub_headline && <span className="text-xs text-gray-600">{item.sub_headline}</span>}
+                     <div className="flex flex-col basis-7/8  landscape:order-1  portrait:order-2 overflow-hidden  gap-1 ">
+                        
+                       <div className=' w-full basis-5/6  flex flex-col  gap-1 overflow-hidden'>
+                            <Link href={`/news/${item.id}`} className="text-xs/5 xs:text-sm/6 font-semibold text-gray-800 hover:text-sky-700">
+                              {item.headline}
+                            </Link>
+                            {item.sub_headline && <span className="text-xs/5 xs:text-sm/6 text-justify indent-4 text-gray-600">{item.sub_headline}</span>}
+                            <hr className='text-gray-200'/>
+                            {item.body && <span className="h-20 text-xs/5 xs:text-sm/6  text-wrap text-justify  indent-4 font-bold text-gray-600">{item.body}</span>}
+                        </div>
 
-                        <div className=' w-full  '>
-                         <Link id="morePortrait" href={`/news/${item.id}`} className="landscape:hidden float-left text-[10px] text-sky-600 hover:text-sky-700 ">
+                        <div className=' w-full basis-1/6 shrink-0 '>
+                         <Link id="morePortrait" href={`/news/${item.id}`} className="landscape:hidden float-left text-[10px] text-sky-600 hover:text-sky-700 py-1 ">
                               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"  className="size-6 stroke-2 stroke-gray-600">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
                               </svg>
@@ -89,7 +95,7 @@ export default async function PublicNewsPage({
                      </div>
                    
                    
-                    <div className="flex flex-row items-center  landscape:order-2 portrait:order-1  ">
+                    <div className="flex flex-row basis-1/8 items-center  landscape:order-2 portrait:order-1  ">
                     
                       <div className='flex basis-1/2 gap-1'>
                         <LikeButton className='flex  items-center gap-2 text-[10px] px-2 py-1   disabled:opacity-50 hover:cursor-pointer '

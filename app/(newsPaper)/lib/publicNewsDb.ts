@@ -37,6 +37,7 @@ export type PublicNewsListItem = {
   id: number
   headline: string
   sub_headline: string | null
+  body: string
   news_category: string | null
   news_source: string | null
   reporter: string | null
@@ -58,6 +59,7 @@ const publicNewsListColumns = {
   id: news.id,
   headline: news.headline,
   sub_headline: news.sub_headline,
+  body:news.body,
   news_category: news.news_category,
   news_source: news.news_source,
   reporter: news.reporter,
