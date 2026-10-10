@@ -44,34 +44,20 @@ export function NewsCarousel({ className, images }: { className: string; images:
  const { selectedIndex, scrollSnaps, onDotButtonClick } =
     useDotButton(emblaApi)
 
-  // if (images.length === 0) {
-  //   return (
-  //     <div className={`embla ${className}`}>
-  //       <div className="embla__viewport w-full h-full overflow-hidden relative" ref={emblaRef}>
-  //         <div className="embla__container flex w-full h-full">
-  //           <div className="embla__slide flex-none basis-full h-full bg-gray-300 flex justify-center items-center text-gray-500">
-  //             No images available
-  //           </div>
-  //         </div>
-  //       </div>
-  //     </div>
-  //   )
-  // }
-
   return (
      <div dir='ltr' className={`embla relative ${className}`}>
-      <div className="embla__viewport w-full  overflow-hidden relative" ref={emblaRef}>
-        <div className="embla__container flex w-full ">
+      <div className="embla__viewport w-full h-full  overflow-hidden relative" ref={emblaRef}>
+        <div className="embla__container flex w-full  h-full ">
           {images.map((img , index) => (
             
-            <div className="embla__slide  flex-none basis-full  relative" key={index}>
+            <div className="embla__slide flex justify-center items-center  flex-none w-full  h-full  relative bg-gray-200/60 " key={index}>
               
               <Image
                 src={`/newsImages/newsIMGs/${img}`}
                 alt={img}
-                width={600} height={600}
-                className="object-fit block w-full "
-                
+                fill
+      sizes="(max-width: 768px) 100vw, 200px"
+      className="object-contain"
               />
             </div>
             

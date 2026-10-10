@@ -85,12 +85,11 @@ export default async function PublicNewsPage({
                       portrait:flex-col portrait:w-full portrait:overflow-hidden     portrait:gap-0 portrait:border-gray-200  portrait:pb-3 " 
                 >
                   
-                  <div id="IMG"  className="flex flex-wrap   items-start gap-3 landscape:h-full aspect-square portrait:w-full  ">
-                    {/* {thumb && (
-                      <Image src={thumb} alt={item.headline} width={300} height={300} className="h-full w-full aspect-square   " />
-                     )} */}
-<NewsCarousel key={images.length} className=" w-full mx-auto" images={(imagesMap.get(item.id) ?? []).map((img) => img.image_name)}/>
-                     
+                  <div id="IMG"  className="flex flex-col flex-wrap   items-start gap-3 landscape:h-full landscape:aspect-square portrait:w-full  ">
+<NewsCarousel key={images.length} images={(imagesMap.get(item.id) ?? []).map((img) => img.image_name)}
+  className=" w-full aspect-square mx-auto overflow-hidden "
+  />
+          
                   </div>
 
                   <div  className="flex flex-col landscape:justify-between  flex-1 min-w-0 landscape:px-2 landscape:pt-2 landscape:pb-1 portrait:px-2 portrait:py-1 overflow-hidden">
@@ -105,11 +104,8 @@ export default async function PublicNewsPage({
                         </div>
 
                         <div className=' w-full basis-1/6 shrink-0 '>
-                         <Link id="show_Portrait" href={`/news/${item.id}`} className="landscape:hidden float-left text-[10px] text-sky-600 hover:text-sky-700 py-1 ">
-                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"  className="size-6 stroke-2 stroke-gray-600">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
-                              </svg>
-                          </Link>
+                        
+                          <NewsReaderButton  newsId={item.id} className="landscape:hidden float-left text-[10px] text-sky-600 hover:text-sky-700 py-1 " />
                         </div>
 
 

@@ -88,10 +88,8 @@ export default function NewsReaderProvider({
 
             {active.image_names.length > 0 && (
               <div className="flex flex-col gap-3">
-                <NewsCarousel
-                  key={active.image_names.length}
-                  className=" w-full mx-auto"
-                  images={active.image_names}
+                <NewsCarousel key={active.image_names.length}  images={active.image_names}
+                  className=" w-full aspect-square mx-auto overflow-hidden "
                 />
               </div>
             )}

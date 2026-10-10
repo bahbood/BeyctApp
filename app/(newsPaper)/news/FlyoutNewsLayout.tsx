@@ -74,7 +74,7 @@ const menuVariants = {
 
               <div id="LC" className="landscape:w-8/12 portrait:w-full h-full flex flex-col">
 
-                <div dir="ltr" id="header" className="flex w-full landscape:px-5 portrait:px-2 pt-4 pb-2 justify-between items-center portrait:bg-sky-600 ">
+                <div dir="ltr" id="header" className="flex w-full landscape:px-5 portrait:px-4 pt-3 pb-3 justify-between items-center portrait:bg-sky-600 ">
                  
                   <svg xmlns="http://www.w3.org/2000/svg" width="20mm" height="20mm" version="1.1" viewBox="0 0 2000 2000"
                     className=' size-7  cursor-pointer duration-300 transition-colors
@@ -85,7 +85,7 @@ const menuVariants = {
                     <path d="M541.36 1056.22l614.33 614.32c64.32,64.29 64.32,169.19 0,233.47l-16.49 16.49c-64.29,64.31 -169.17,64.31 -233.48,0.02l-864.3 -864.3c-27.3,-27.31 -27.3,-71.85 0,-99.15l864.3 -864.3c64.31,-64.29 169.19,-64.29 233.48,0.01l16.49 16.48c64.32,64.3 64.32,169.2 0,233.48l-614.33 614.33c-27.3,27.3 -27.3,71.84 0,99.15z" />
                     <path d="M992.07 829.89l784.51 0c90.27,0 165.09,74.82 165.09,165.09l0 23.33c0,90.26 -74.16,165.09 -165.09,165.09l-784.51 0c-90.92,0 -165.09,-74.17 -165.09,-165.09l0 -23.33c0,-90.93 75.49,-165.09 165.09,-165.09z" />
                   </svg>
-                   <Image className="w-[70px] landscape:hidden  " width={600} height={200} src="/logo/Bey-Logo-new-05-white.svg" alt={"logo H"} ></Image>
+                   <Image className=" landscape:hidden  " width={35} height={35} src="/logo/Bey-Logo-new-06-blue.svg" alt={"logo H"} ></Image>
 
 
                 </div>
