@@ -9,6 +9,7 @@ import {
   news,
   newsImages,
   newsLikes,
+  newsComments,
 } from "./schema";
 
 
@@ -17,6 +18,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
     store: one(stores),
     newsAgency: one(newsAgencies),
     newsLikes: many(newsLikes),
+    newsComments: many(newsComments),
 }));
 
 // تعریف روابط
@@ -44,10 +46,24 @@ export const newsAgenciesRelations = relations(newsAgencies, ({ many, one }) => 
 export const newsRelations = relations(news, ({ many, one }) => ({
   images: many(newsImages),
   likes: many(newsLikes),
+  comments: many(newsComments),
 
   newsAgency: one(newsAgencies, {
     fields: [news.news_agency_id],
     references: [newsAgencies.id],
+  }),
+}));
+
+
+export const newsCommentsRelations = relations(newsComments, ({ one }) => ({
+  news: one(news, {
+    fields: [newsComments.news_id],
+    references: [news.id],
+  }),
+
+  user: one(users, {
+    fields: [newsComments.user_id],
+    references: [users.id],
   }),
 }));
 

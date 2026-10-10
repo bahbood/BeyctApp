@@ -3,8 +3,8 @@
 
 import 'server-only'
 import { db } from '@/app/db'
-import { news, newsAgencies, newsImages, newsLikes } from '@/app/db/schema'
-import { and, count, desc, eq, gt, inArray, isNull, or, sql } from 'drizzle-orm'
+import { news, newsAgencies, newsImages, newsLikes, newsComments, users } from '@/app/db/schema'
+import { and, asc, count, desc, eq, gt, inArray, isNull, or, sql } from 'drizzle-orm'
 import { getImagesForNews } from '@/app/(newsPaper)/(AgenciesManagement)/lib/newsDb'
 import type { NewsImage } from '@/app/db/schema'
 
@@ -43,6 +43,7 @@ export type PublicNewsListItem = {
   reporter: string | null
   is_breaking: boolean | null
   view_count: number
+  comments_enabled: boolean
   published_at: Date
   archive_at: Date | null
   news_agency_id: number
@@ -65,6 +66,7 @@ const publicNewsListColumns = {
   reporter: news.reporter,
   is_breaking: news.is_breaking,
   view_count: news.view_count,
+  comments_enabled: news.comments_enabled,
   published_at: news.published_at,
   archive_at: news.archive_at,
   news_agency_id: news.news_agency_id,
@@ -147,6 +149,49 @@ export async function getLikedNewsIds(newsIds: number[], userId: number): Promis
     .where(and(inArray(newsLikes.news_id, newsIds), eq(newsLikes.user_id, userId)))
 
   return new Set(rows.map((row) => row.newsId))
+}
+
+/** یک دیدگاه به همراه نام نویسنده */
+export type PublicNewsComment = {
+  id: number
+  body: string
+  created_at: Date
+  user_id: number
+  user_name: string
+  user_family: string | null
+}
+
+/** فهرست دیدگاه‌های یک خبر به ترتیب قدیمی‌ترین → جدیدترین */
+export async function getNewsComments(newsId: number): Promise<PublicNewsComment[]> {
+  return db
+    .select({
+      id: newsComments.id,
+      body: newsComments.body,
+      created_at: newsComments.created_at,
+      user_id: newsComments.user_id,
+      user_name: users.user_name,
+      user_family: users.family,
+    })
+    .from(newsComments)
+    .innerJoin(users, eq(newsComments.user_id, users.id))
+    .where(eq(newsComments.news_id, newsId))
+    .orderBy(asc(newsComments.created_at), asc(newsComments.id))
+}
+
+/** شمارش دیدگاه‌ها برای چند خبر به صورت یکجا — مثال: Map { 12: 5, 19: 2 } */
+export async function getNewsCommentCounts(newsIds: number[]): Promise<Map<number, number>> {
+  const counts = new Map<number, number>()
+  if (newsIds.length === 0) return counts
+
+  const rows = await db
+    .select({ newsId: newsComments.news_id, total: count() })
+    .from(newsComments)
+    .where(inArray(newsComments.news_id, newsIds))
+    .groupBy(newsComments.news_id)
+
+  for (const row of rows) counts.set(row.newsId, row.total)
+
+  return counts
 }
 
 /** افزایش شمارنده بازدید یک خبر */

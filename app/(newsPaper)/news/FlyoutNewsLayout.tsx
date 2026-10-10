@@ -1,4 +1,4 @@
-// app/components/(Flyouts)/FlyoutLayout.tsx
+// app/(newsPaper)/news/FlyoutNewsLayout.tsx
 
 'use client'
 
@@ -13,21 +13,23 @@ const backdropVariants = {
   exit: { opacity: 0, transition: { duration: 0.2, ease:easeIn } },
 }
 const menuVariants = {
-  hidden: { y: "-100%" },
+  hidden: { opacity: 0, scale: 0.2 },
   visible: {
-    y: 0,
+    opacity: 1,
+    scale: 1,
     transition: {
       type: "tween" as const,
       duration: 0.4,
-      ease: "easeOut" as const,          // یا "easeOut" as const
+      ease: "easeOut" as const,
       delay: 0.1,
     },
   },
   exit: {
-    y: "-100%",
-    transition: { 
-        duration: 0.3,
-         ease: "easeIn" as const 
+    opacity: 0,
+    scale: 0.2,
+    transition: {
+      duration: 0.3,
+      ease: "easeIn" as const,
     },
   },
 }

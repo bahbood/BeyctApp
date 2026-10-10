@@ -6,6 +6,7 @@ import {
   getNewsImagesMap,
   getLikeCounts,
   getLikedNewsIds,
+  getNewsCommentCounts,
   PUBLIC_NEWS_PAGE_SIZE,
 } from '@/app/(newsPaper)/lib/publicNewsDb'
 import { newsImageUrl } from '@/app/(newsPaper)/(AgenciesManagement)/lib/newsImagesDb'
@@ -14,6 +15,8 @@ import LikeButton from './LikeButton'
 import { toJalaaliInput } from '@/app/lib/jalaliDate'
 import CommentButton from './CommentButton'
 import { NewsCarousel } from '@/app/components/(newsCarousel)/newsCarousel'
+import NewsReaderProvider, { type NewsReaderItem } from './NewsReader'
+import NewsReaderButton from './NewsReaderButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,10 +32,11 @@ export default async function PublicNewsPage({
   const { rows, total } = await getPublicNewsList({ page })
 
   const newsIds = rows.map((n) => n.id)
-  const [imagesMap, likeCounts, likedIds] = await Promise.all([
+  const [imagesMap, likeCounts, likedIds, commentCounts] = await Promise.all([
     getNewsImagesMap(newsIds),
     getLikeCounts(newsIds),
     userinfo?.id ? getLikedNewsIds(newsIds, userinfo.id) : Promise.resolve(new Set<number>()),
+    getNewsCommentCounts(newsIds),
   ])
 
   const totalPages = Math.max(1, Math.ceil(total / PUBLIC_NEWS_PAGE_SIZE))
@@ -41,7 +45,26 @@ export default async function PublicNewsPage({
     return p > 1 ? `/news?page=${p}` : '/news'
   }
 
+  const readerItems: NewsReaderItem[] = rows.map((item) => ({
+    id: item.id,
+    headline: item.headline,
+    sub_headline: item.sub_headline,
+    body: item.body,
+    news_category: item.news_category,
+    news_source: item.news_source,
+    reporter: item.reporter,
+    view_count: item.view_count,
+    comments_enabled: item.comments_enabled,
+    comment_count: commentCounts.get(item.id) ?? 0,
+    published_label: toJalaaliInput(item.published_at),
+    news_agency_name: item.news_agency_name,
+    image_names: (imagesMap.get(item.id) ?? []).map((img) => img.image_name),
+    liked: likedIds.has(item.id),
+    like_count: likeCounts.get(item.id) ?? 0,
+  }))
+
   return (
+    <NewsReaderProvider items={readerItems} isLoggedIn={!!userinfo?.id}>
     <div className="w-full">
       
 
@@ -66,25 +89,23 @@ export default async function PublicNewsPage({
                     {/* {thumb && (
                       <Image src={thumb} alt={item.headline} width={300} height={300} className="h-full w-full aspect-square   " />
                      )} */}
-                             <NewsCarousel key={images.length} className=" w-full  aspect-square  mx-auto" images={images}/>
+<NewsCarousel key={images.length} className=" w-full mx-auto" images={(imagesMap.get(item.id) ?? []).map((img) => img.image_name)}/>
                      
                   </div>
 
-                  <div id="content" className="flex flex-col landscape:justify-between  flex-1 min-w-0 landscape:px-2 landscape:pt-2 landscape:pb-1 portrait:px-2 portrait:py-1 overflow-hidden">
+                  <div  className="flex flex-col landscape:justify-between  flex-1 min-w-0 landscape:px-2 landscape:pt-2 landscape:pb-1 portrait:px-2 portrait:py-1 overflow-hidden">
 
                      <div className="flex flex-col basis-7/8  landscape:order-1  portrait:order-2 overflow-hidden  gap-1 ">
                         
-                       <div className=' w-full basis-5/6  flex flex-col  gap-1 overflow-hidden'>
-                            <Link href={`/news/${item.id}`} className="text-xs/5 xs:text-sm/6 font-semibold text-gray-800 hover:text-sky-700">
-                              {item.headline}
-                            </Link>
+                       <div id="content" className=' w-full basis-5/6  flex flex-col  gap-1 overflow-hidden'>
+                            <span  className="text-xs/5 xs:text-sm/6 font-semibold text-gray-800 hover:text-sky-700"> {item.headline} </span>
                             {item.sub_headline && <span className="text-xs/5 xs:text-sm/6 text-justify indent-4 text-gray-600">{item.sub_headline}</span>}
                             <hr className='text-gray-200'/>
                             {item.body && <span className="h-20 text-xs/5 xs:text-sm/6  text-wrap text-justify  indent-4 font-bold text-gray-600">{item.body}</span>}
                         </div>
 
                         <div className=' w-full basis-1/6 shrink-0 '>
-                         <Link id="morePortrait" href={`/news/${item.id}`} className="landscape:hidden float-left text-[10px] text-sky-600 hover:text-sky-700 py-1 ">
+                         <Link id="show_Portrait" href={`/news/${item.id}`} className="landscape:hidden float-left text-[10px] text-sky-600 hover:text-sky-700 py-1 ">
                               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"  className="size-6 stroke-2 stroke-gray-600">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
                               </svg>
@@ -98,7 +119,7 @@ export default async function PublicNewsPage({
                     <div className="flex flex-row basis-1/8 items-center  landscape:order-2 portrait:order-1  ">
                     
                       <div className='flex basis-1/2 gap-1'>
-                        <LikeButton className='flex  items-center gap-2 text-[10px] px-2 py-1   disabled:opacity-50 hover:cursor-pointer '
+                        <LikeButton  className='flex  items-center gap-2 text-[10px] px-2 py-1   disabled:opacity-50 hover:cursor-pointer '
                             newsId={item.id}
                             initialLiked={likedIds.has(item.id)}
                             initialCount={likeCounts.get(item.id) ?? 0}
@@ -115,11 +136,7 @@ export default async function PublicNewsPage({
                           <span className="text-[10px] text-gray-400 mt-1">
                               {item.news_agency_name} • {toJalaaliInput(item.published_at)}
                           </span>
-                          <Link id="moreLandscape" href={`/news/${item.id}`} className="portrait:hidden text-[10px] text-sky-600 hover:text-sky-700 float-end">
-                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="size-6">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
-                              </svg>
-                          </Link>
+                          <NewsReaderButton newsId={item.id} className="portrait:hidden text-[10px] text-sky-600 hover:text-sky-700 float-end" />
                             
                       </div>
                        
@@ -177,5 +194,6 @@ export default async function PublicNewsPage({
         )}
       </main>
     </div>
+    </NewsReaderProvider>
   )
 }
