@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import AuthenticationCMP from "../(Auth)/components/AuthenticationCMP";
 import { HeaderIconsCMP } from "./HeaderIconsCMP";
 import { MessagesIndicatorCMP } from "./MessagesIndicatorCMP";
+import { HeaderFallIconsCMP } from "./HeaderFallIconsCMP";
 
 export default function HeaderCMP( {className, unreadMessagesCount = 0}: {className?: string; unreadMessagesCount?: number} ) {
     
@@ -20,6 +21,7 @@ export default function HeaderCMP( {className, unreadMessagesCount = 0}: {classN
             <div className=" landscape:w-6/9 portrait:w-1/2  h-full flex items-center p-0 m-0 ">
                 <Image className="w-[60px]  " width={700} height={700} src="/logo/Bey-Logo-new-06-blue.svg" alt={"logo"} ></Image>
                 <HeaderIconsCMP className="hidden md:flex  portrait:hidden  ms-5"/>
+                <HeaderFallIconsCMP className="flex min-w-24 md:hidden  portrait:flex  ms-1"/>
             </div>
             <div dir="ltr" className=" landscape:w-3/9 portrait:w-1/2  h-full flex items-center gap-1  ">
 

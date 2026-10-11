@@ -30,14 +30,14 @@ export default function AuthenticationCMP({className ,}:{className:string , }){
 
             <div className="landscape:flex portrait:hidden flex-1 flex-col justify-center items-center  h-12.5 ms-1 ">
                         <div className="w-full h-1/4">
-                            <span className=" flex items-center w-full h-full  text-[10px] group-hover:text-sky-600 text-sky-700 transition-colors duration-300 " >
+                            <span className=" flex items-center w-full h-full  text-[5px] md:text-[9px] group-hover:text-sky-600 text-sky-700 transition-colors duration-300 " >
                                 {user ? `Logout . Profile` : `Login`}
                             </span>
 
                         </div>
                         <div className="flex gap-1 w-full h-1/4 items-center">
                             <div className={` w-1 h-1 rounded-full ${ user ? `bg-green-200` : `hidden` }`}></div>
-                            <span className=" flex items-center w-full h-full  text-[10px] group-hover:text-sky-600 text-sky-700 transition-colors duration-300 ">
+                            <span className=" flex items-center w-full h-full   text-[5px] md:text-[9px] group-hover:text-sky-600 text-sky-700 transition-colors duration-300 ">
                                {user ? `User : ${user.name}` : `User : Quest user`}
                             </span>
 
