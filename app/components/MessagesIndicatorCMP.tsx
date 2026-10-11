@@ -5,15 +5,15 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-export function MessagesIndicatorCMP({ unreadCount = 0 }: { unreadCount?: number }) {
+export function MessagesIndicatorCMP({className, unreadCount = 0 }: {className?:string, unreadCount?: number }) {
   const pathname = usePathname()
   const isActive = pathname === '/messages' || pathname.startsWith('/messages/')
 
   return (
-    <Link
+    <Link className={`${className}`}
       href="/messages"
       title={unreadCount > 0 ? `${unreadCount} پیام خوانده نشده` : 'پیام ها'}
-      className="relative flex items-center justify-center p-1 rounded-sm group select-none bg-gray-400/10 hover:bg-gray-400/30"
+      // className="relative flex items-center justify-center p-1 rounded-sm group select-none bg-gray-400/10 hover:bg-gray-400/30"
     >
     
 <svg xmlns="http://www.w3.org/2000/svg" width="20mm" height="20mm" version="1.1"  
@@ -25,7 +25,7 @@ export function MessagesIndicatorCMP({ unreadCount = 0 }: { unreadCount?: number
 
       {unreadCount > 0 && (
         <span
-          className="absolute -top-0.5 -left-0.5 min-w-4 h-4 px-1 pt-1 flex items-center justify-center
+          className="absolute -top-0.5 -left-2 min-w-4 h-4 px-1 pt-1 flex items-center justify-center
                      rounded-full bg-red-500 text-white text-[9px] font-bold "
         >
           {unreadCount > 99 ? '99+' : unreadCount}

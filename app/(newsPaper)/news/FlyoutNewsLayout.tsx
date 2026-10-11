@@ -56,7 +56,7 @@ const menuVariants = {
             {/* خود منو - بعد از backdrop slide می‌شود */}
             <motion.div className=" z-50  flex relative
             landscape:h-[95%] landscape:md:h-[90%]   landscape:aspect-14/9  landscape:md:m-4 landscape:m-2
-            portrait:h-[80%]  portrait:md:h-[90%]     portrait:aspect-9/16 
+            portrait:h-[95%]  portrait:md:h-[95%]     portrait:w-full
             overflow-hidden overscroll-none bg-gray-100  shadow-sm rounded-sm    border border-gray-400"
               onClick={(e) => e.stopPropagation()}
               variants={menuVariants}
@@ -79,13 +79,13 @@ const menuVariants = {
                   <svg xmlns="http://www.w3.org/2000/svg" width="20mm" height="20mm" version="1.1" viewBox="0 0 2000 2000"
                     className=' size-7  cursor-pointer duration-300 transition-colors
                       landscape:fill-sky-800 landscape:hover:fill-orange-500
-                      portrait:fill-sky-800 portrait:hover:fill-orange-500 '
+                      portrait:fill-sky-100 portrait:hover:fill-orange-500 '
                     onClick={onCloseMe}
                   >
                     <path d="M541.36 1056.22l614.33 614.32c64.32,64.29 64.32,169.19 0,233.47l-16.49 16.49c-64.29,64.31 -169.17,64.31 -233.48,0.02l-864.3 -864.3c-27.3,-27.31 -27.3,-71.85 0,-99.15l864.3 -864.3c64.31,-64.29 169.19,-64.29 233.48,0.01l16.49 16.48c64.32,64.3 64.32,169.2 0,233.48l-614.33 614.33c-27.3,27.3 -27.3,71.84 0,99.15z" />
                     <path d="M992.07 829.89l784.51 0c90.27,0 165.09,74.82 165.09,165.09l0 23.33c0,90.26 -74.16,165.09 -165.09,165.09l-784.51 0c-90.92,0 -165.09,-74.17 -165.09,-165.09l0 -23.33c0,-90.93 75.49,-165.09 165.09,-165.09z" />
                   </svg>
-                   <Image className=" landscape:hidden  " width={35} height={35} src="/logo/Bey-Logo-new-06-blue.svg" alt={"logo H"} ></Image>
+                   <Image className=" landscape:hidden  " width={50} height={30} src="/logo/Bey-Logo-new-5035-w.svg" alt={"logo H"} ></Image>
 
 
                 </div>
