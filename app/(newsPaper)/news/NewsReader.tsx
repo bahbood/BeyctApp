@@ -4,6 +4,7 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useRef,
@@ -49,18 +50,28 @@ export function useNewsReader() {
 export default function NewsReaderProvider({
   items,
   isLoggedIn,
+  onItemOpen,
   children,
 }: {
   items: NewsReaderItem[]
   isLoggedIn: boolean
+  onItemOpen?: (id: number) => void
   children: ReactNode
 }) {
   const [activeId, setActiveId] = useState<number | null>(null)
   const active = items.find((n) => n.id === activeId) ?? null
   const { logInPage_toggleShow } = useFlyoutPage()
 
+  const openItem = useCallback(
+    (id: number) => {
+      setActiveId(id)
+      onItemOpen?.(id)
+    },
+    [onItemOpen],
+  )
+
   return (
-    <NewsReaderContext.Provider value={setActiveId}>
+    <NewsReaderContext.Provider value={openItem}>
       {children}
 
       <FlyoutNewsLayout isOpen={active !== null} onCloseMe={() => setActiveId(null)}>

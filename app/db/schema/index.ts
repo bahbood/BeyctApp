@@ -12,5 +12,6 @@ export * from './news';
 export * from './newsImages';
 export * from './newsLikes';
 export * from './newsComments';
+export * from './newsReads';
 export * from './serviceCategories';
 export * from './services';

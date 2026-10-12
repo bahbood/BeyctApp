@@ -3,9 +3,17 @@
 
 import 'server-only'
 import { db } from '@/app/db'
-import { news, newsAgencies, newsImages, newsLikes, newsComments, users } from '@/app/db/schema'
+import { news, newsAgencies, newsImages, newsLikes, newsComments, newsReads, users } from '@/app/db/schema'
 import { and, asc, count, desc, eq, gt, inArray, isNull, or, sql } from 'drizzle-orm'
 import { getImagesForNews } from '@/app/(newsPaper)/(AgenciesManagement)/lib/newsDb'
+import { toJalaaliInput } from '@/app/lib/jalaliDate'
+import { NEWS_STREAM_PAGE_SIZE } from '@/app/(newsPaper)/lib/newsStreamTypes'
+import type {
+  NewsStreamCursor,
+  NewsStreamDirection,
+  NewsStreamInitialState,
+  PublicNewsStreamItem,
+} from '@/app/(newsPaper)/lib/newsStreamTypes'
 import type { NewsImage } from '@/app/db/schema'
 
 /** تعداد اخبار در هر صفحه از لیست عمومی */
@@ -101,6 +109,205 @@ export async function getPublicNewsList(
     .offset(offset)
 
   return { rows, total: total ?? 0 }
+}
+
+// ─────────────────────────────────────────────────────────────
+// جریان پیوسته اخبار (بدون صفحه بندی) بر پایه کرسر (published_at, id)
+// ─────────────────────────────────────────────────────────────
+
+/** شرط کرسر: اخبار قدیمی‌تر/جدیدتر از یک نقطه مشخص — مقایسه در خود دیتابیس برای حفظ دقت کامل زمان */
+function streamCursorWhere(cursorId: number | null | undefined, direction: NewsStreamDirection) {
+  if (cursorId === null || cursorId === undefined) return undefined
+  const anchor = sql`(select a.published_at, a.id from news a where a.id = ${cursorId})`
+  const tuple = sql`(${news.published_at}, ${news.id})`
+  return direction === 'older' ? sql`${tuple} < ${anchor}` : sql`${tuple} > ${anchor}`
+}
+
+/** شرط کرسر شامل خود نقطه: (published_at, id) <= cursor */
+function streamAtOrBeforeWhere(cursorId: number) {
+  return sql`(${news.published_at}, ${news.id}) <= (select a.published_at, a.id from news a where a.id = ${cursorId})`
+}
+
+/**
+ * یک صفحه از جریان اخبار در جهت مشخص.
+ * `rows` همیشه از جدید به قدیم مرتب است؛ `hasMore` یعنی فراتر از این صفحه آیتم دیگری هست.
+ */
+export async function getNewsStreamPage(options: {
+  cursor: NewsStreamCursor
+  direction: NewsStreamDirection
+  limit?: number
+}): Promise<{ rows: PublicNewsListItem[]; hasMore: boolean }> {
+  const { cursor, direction, limit = NEWS_STREAM_PAGE_SIZE } = options
+  const where = and(publicNewsVisibility(), streamCursorWhere(cursor?.id, direction))
+
+  const rows = await db
+    .select(publicNewsListColumns)
+    .from(news)
+    .innerJoin(newsAgencies, eq(news.news_agency_id, newsAgencies.id))
+    .where(where)
+    .orderBy(
+      direction === 'older' ? desc(news.published_at) : asc(news.published_at),
+      direction === 'older' ? desc(news.id) : asc(news.id),
+    )
+    .limit(limit + 1)
+
+  const hasMore = rows.length > limit
+  const pageRows = rows.slice(0, limit)
+
+  // در جهت «جدیدتر» نزدیک‌ترین آیتم‌ها ابتدا آمده‌اند؛ برای نمایش از جدید به قدیم برمی‌گردانیم
+  return { rows: direction === 'newer' ? pageRows.reverse() : pageRows, hasMore }
+}
+
+/**
+ * نخستین خبر خوانده‌نشده کاربر (جدیدترین خبر بدون رکورد خوانده شدن).
+ * اگر کاربر مهمان باشد یا همه اخبار را خوانده باشد، جدیدترین خبر برمی‌گردد.
+ */
+export async function getNewsStreamAnchor(userId: number | null): Promise<NewsStreamCursor> {
+  if (userId) {
+    const [unread] = await db
+      .select({ published_at: news.published_at, id: news.id })
+      .from(news)
+      .innerJoin(newsAgencies, eq(news.news_agency_id, newsAgencies.id))
+      .leftJoin(newsReads, and(eq(newsReads.news_id, news.id), eq(newsReads.user_id, userId)))
+      .where(and(publicNewsVisibility(), isNull(newsReads.id)))
+      .orderBy(desc(news.published_at), desc(news.id))
+      .limit(1)
+
+    if (unread) return { publishedAt: unread.published_at.toISOString(), id: unread.id }
+  }
+
+  const [newest] = await db
+    .select({ published_at: news.published_at, id: news.id })
+    .from(news)
+    .innerJoin(newsAgencies, eq(news.news_agency_id, newsAgencies.id))
+    .where(publicNewsVisibility())
+    .orderBy(desc(news.published_at), desc(news.id))
+    .limit(1)
+
+  return newest ? { publishedAt: newest.published_at.toISOString(), id: newest.id } : null
+}
+
+/**
+ * پنجره اولیه جریان: نخستین خبر خوانده‌نشده به همراه یک خبر قبل (جدیدتر) و یک خبر بعد (قدیمی‌تر).
+ */
+export async function getPublicNewsStreamInitial(userId: number | null): Promise<PublicNewsListItem[]> {
+  const anchor = await getNewsStreamAnchor(userId)
+  if (!anchor) return []
+
+  const [following, preceding] = await Promise.all([
+    // خود خبر لنگر و یک خبر قدیمی‌تر بعد از آن
+    db
+      .select(publicNewsListColumns)
+      .from(news)
+      .innerJoin(newsAgencies, eq(news.news_agency_id, newsAgencies.id))
+      .where(and(publicNewsVisibility(), streamAtOrBeforeWhere(anchor.id)))
+      .orderBy(desc(news.published_at), desc(news.id))
+      .limit(2),
+    // یک خبر جدیدتر قبل از لنگر
+    getNewsStreamPage({ cursor: anchor, direction: 'newer', limit: 1 }),
+  ])
+
+  return [...preceding.rows, ...following]
+}
+
+/** تبدیل ردیف‌های لیست به آیتم‌های آماده جریان (تصاویر، پسند، دیدگاه و وضعیت خوانده شدن) */
+export async function getPublicNewsStreamItems(
+  rows: PublicNewsListItem[],
+  userId: number | null,
+): Promise<PublicNewsStreamItem[]> {
+  if (rows.length === 0) return []
+
+  const ids = rows.map((row) => row.id)
+  const [imagesMap, likeCounts, likedIds, commentCounts, readIds] = await Promise.all([
+    getNewsImagesMap(ids),
+    getLikeCounts(ids),
+    userId ? getLikedNewsIds(ids, userId) : Promise.resolve(new Set<number>()),
+    getNewsCommentCounts(ids),
+    userId ? getReadNewsIds(ids, userId) : Promise.resolve(new Set<number>()),
+  ])
+
+  return rows.map((item) => ({
+    id: item.id,
+    headline: item.headline,
+    sub_headline: item.sub_headline,
+    body: item.body,
+    news_category: item.news_category,
+    news_source: item.news_source,
+    reporter: item.reporter,
+    view_count: item.view_count,
+    comments_enabled: item.comments_enabled,
+    comment_count: commentCounts.get(item.id) ?? 0,
+    published_label: toJalaaliInput(item.published_at),
+    published_at: item.published_at.toISOString(),
+    news_agency_name: item.news_agency_name,
+    image_names: (imagesMap.get(item.id) ?? []).map((img) => img.image_name),
+    liked: likedIds.has(item.id),
+    like_count: likeCounts.get(item.id) ?? 0,
+    is_read: readIds.has(item.id),
+  }))
+}
+
+/** وضعیت اولیه جریان برای رندر سمت سرور */
+export async function getPublicNewsStreamInitialState(
+  userId: number | null,
+): Promise<NewsStreamInitialState> {
+  const rows = await getPublicNewsStreamInitial(userId)
+  if (rows.length === 0) return { items: [], hasOlder: false, hasNewer: false }
+
+  const top = rows[0]
+  const bottom = rows[rows.length - 1]
+
+  const [olderProbe, newerProbe, items] = await Promise.all([
+    db
+      .select({ id: news.id })
+      .from(news)
+      .innerJoin(newsAgencies, eq(news.news_agency_id, newsAgencies.id))
+      .where(
+        and(
+          publicNewsVisibility(),
+          streamCursorWhere(bottom.id, 'older'),
+        ),
+      )
+      .limit(1),
+    db
+      .select({ id: news.id })
+      .from(news)
+      .innerJoin(newsAgencies, eq(news.news_agency_id, newsAgencies.id))
+      .where(
+        and(
+          publicNewsVisibility(),
+          streamCursorWhere(top.id, 'newer'),
+        ),
+      )
+      .limit(1),
+    getPublicNewsStreamItems(rows, userId),
+  ])
+
+  return {
+    items,
+    hasOlder: olderProbe.length > 0,
+    hasNewer: newerProbe.length > 0,
+  }
+}
+
+/** شناسه خبرهایی که کاربر مشخص قبلا خوانده است */
+export async function getReadNewsIds(newsIds: number[], userId: number): Promise<Set<number>> {
+  if (newsIds.length === 0) return new Set()
+
+  const rows = await db
+    .select({ newsId: newsReads.news_id })
+    .from(newsReads)
+    .where(and(inArray(newsReads.news_id, newsIds), eq(newsReads.user_id, userId)))
+
+  return new Set(rows.map((row) => row.newsId))
+}
+
+/** ثبت خوانده شدن یک خبر توسط کاربر — تکراری بودن خطا ایجاد نمی‌کند */
+export async function markNewsRead(newsId: number, userId: number): Promise<void> {
+  await db
+    .insert(newsReads)
+    .values({ news_id: newsId, user_id: userId })
+    .onConflictDoNothing()
 }
 
 /** یک خبر عمومی به همراه تصاویر و اطلاعات خبرگزاری */

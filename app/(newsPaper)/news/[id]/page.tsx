@@ -1,6 +1,6 @@
 // app/(newsPaper)/news/[id]/page.tsx
 
-import { getPublicNewsById, getLikeCounts, getLikedNewsIds, incrementNewsViewCount } from '@/app/(newsPaper)/lib/publicNewsDb'
+import { getPublicNewsById, getLikeCounts, getLikedNewsIds, incrementNewsViewCount, markNewsRead } from '@/app/(newsPaper)/lib/publicNewsDb'
 import { getUserFromSession } from '@/app/(Auth)/lib/session'
 import { newsImageUrl } from '@/app/(newsPaper)/(AgenciesManagement)/lib/newsImagesDb'
 import LikeButton from '../LikeButton'
@@ -21,7 +21,11 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ id:
   if (!news) return notFound()
 
   // افزایش شمارنده بازدید خارج از مسیر بحرانی رندر انجام می شود تا TTFB تحت تاثیر نوشتن قرار نگیرد
-  after(() => incrementNewsViewCount(newsId))
+  after(async () => {
+    await incrementNewsViewCount(newsId)
+    // خبر بازدید‌شده برای کاربر وارد شده «خوانده‌شده» ثبت می شود
+    if (userinfo?.id) await markNewsRead(newsId, userinfo.id)
+  })
 
   const [likeCounts, likedIds] = await Promise.all([
     getLikeCounts([newsId]),
