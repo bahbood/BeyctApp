@@ -234,7 +234,7 @@ function NewsCard({ item }: { item: PublicNewsStreamItem }) {
 
       <div className="flex flex-col landscape:justify-between flex-1 min-w-0 landscape:px-2 landscape:pt-2 landscape:pb-1 portrait:px-2 portrait:py-1 overflow-hidden">
         <div className="flex flex-col basis-7/8 landscape:order-1 portrait:order-2 overflow-hidden gap-1">
-          <div id="content" className="w-full basis-5/6 flex flex-col gap-1 overflow-hidden">
+          <div id="content" className="w-full basis-6/7 flex flex-col gap-1 overflow-hidden">
             {!item.is_read && (
               <span className="self-start text-[9px] font-bold text-white bg-sky-600 rounded-full px-2 py-0.5">
                 جدید
@@ -250,15 +250,16 @@ function NewsCard({ item }: { item: PublicNewsStreamItem }) {
             )}
           </div>
 
-          <div className="w-full basis-1/6 shrink-0">
-            <NewsReaderButton newsId={item.id} className="landscape:hidden float-left text-[10px] text-sky-600 hover:text-sky-700 py-1" />
+          <div className="w-full basis-1/7 shrink-0 pt-2">
+            <NewsReaderButton newsId={item.id} className="flex landscape:hidden w-12 h-7 justify-center items-center border border-gray-300  float-left text-[10px] text-sky-600 hover:text-sky-700 
+             rounded-md bg-gray-200" />
           </div>
         </div>
 
-        <div className="flex flex-row basis-1/8 items-center landscape:order-2 portrait:order-1">
-          <div className="flex basis-1/2 gap-1">
+        <div className="flex flex-row basis-1/8 items-center landscape:order-2 portrait:order-1  ">
+          <div className="flex basis-1/2 h-full items-center gap-1 ">
             <LikeButton
-              className="flex items-center gap-2 text-[10px] px-2 py-1 disabled:opacity-50 hover:cursor-pointer"
+              className="flex h-full items-center gap-2 text-[10px] px-2 py-1 disabled:opacity-50 hover:cursor-pointer"
               newsId={item.id}
               initialLiked={item.liked}
               initialCount={item.like_count}
@@ -271,11 +272,12 @@ function NewsCard({ item }: { item: PublicNewsStreamItem }) {
             />
           </div>
 
-          <div className="flex basis-1/2 justify-end gap-4">
-            <span className="text-[10px] text-gray-400 mt-1">
+          <div className="flex basis-1/2 justify-end items-center gap-4 ">
+            <span className="text-[10px]  text-gray-400 mt-1">
               {item.news_agency_name} • {item.published_label}
             </span>
-            <NewsReaderButton newsId={item.id} className="portrait:hidden text-[10px] text-sky-600 hover:text-sky-700 float-end" />
+            <NewsReaderButton newsId={item.id} className="flex portrait:hidden  w-12 h-7 justify-center items-center border border-gray-300 text-[10px] text-sky-600 hover:text-sky-700 float-end
+            rounded-md bg-gray-200 " />
           </div>
         </div>
       </div>
