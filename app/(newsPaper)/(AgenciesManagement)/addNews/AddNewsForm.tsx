@@ -17,16 +17,33 @@ export default function AddNewsForm({ canPublish = true }: { canPublish?: boolea
   // PersianDateCMP یک کامپوننت کنترل شده است → مقدار باید در state نگهداری شود
   // این state بین ارسال‌های فرم حفظ می شود (فرم بعد از ارسال ریست می شود ولی این مقدار باقی می ماند)
   const [publishedAt, setPublishedAt] = useState(toJalaaliInput(new Date()))
-  const [archiveAt, setArchiveAt] = useState(toJalaaliInput(new Date()))
+  const [archiveAt, setArchiveAt] = useState('')
+  const [headlinePreview, setHeadlinePreview] = useState('')
+  const [subHeadlinePreview, setSubHeadlinePreview] = useState('')
+  const [bodyPreview, setBodyPreview] = useState('')
+  const [showPreview, setShowPreview] = useState(false)
+  const [isDirty, setIsDirty] = useState(false)
+  const [saved, setSaved] = useState(false)
 
   useEffect(() => {
     if (state?.success) {
+      setSaved(true)
       router.push('/newsList')
     }
   }, [state, router])
 
+  useEffect(() => {
+    if (!isDirty || saved) return
+    const warnBeforeLeave = (event: BeforeUnloadEvent) => {
+      event.preventDefault()
+      event.returnValue = ''
+    }
+    window.addEventListener('beforeunload', warnBeforeLeave)
+    return () => window.removeEventListener('beforeunload', warnBeforeLeave)
+  }, [isDirty, saved])
+
   return (
-    <form action={formAction} className="flex flex-col gap-4">
+    <form action={formAction} onChange={() => setIsDirty(true)} className="flex flex-col gap-4">
       <h2 className="text-sm font-bold text-gray-800">ثبت خبر جدید</h2>
 
       {!canPublish && (
@@ -43,6 +60,7 @@ export default function AddNewsForm({ canPublish = true }: { canPublish?: boolea
           className={fieldClass}
           required
           defaultValue={state?.values?.headline ?? ''}
+          onChange={(event) => setHeadlinePreview(event.target.value)}
         />
       </InputRow>
 
@@ -53,6 +71,7 @@ export default function AddNewsForm({ canPublish = true }: { canPublish?: boolea
           maxLength={200}
           className={fieldClass}
           defaultValue={state?.values?.sub_headline ?? ''}
+          onChange={(event) => setSubHeadlinePreview(event.target.value)}
         />
       </InputRow>
 
@@ -63,6 +82,7 @@ export default function AddNewsForm({ canPublish = true }: { canPublish?: boolea
           className={fieldClass}
           required
           defaultValue={state?.values?.body ?? ''}
+          onChange={(event) => setBodyPreview(event.target.value)}
         />
       </InputRow>
 
@@ -143,8 +163,22 @@ export default function AddNewsForm({ canPublish = true }: { canPublish?: boolea
             className={fieldClass}
           />
         ))}
-        <p className="text-[10px] text-gray-500">فرمت‌های مجاز : JPG, PNG, WEBP, GIF — هر تصویر حداکثر ۲۰۰ KB</p>
+        <p className="text-[10px] text-gray-500">فرمت‌های مجاز: JPG, PNG, WEBP, GIF — هر تصویر حداکثر ۲۰۰ KB و مجموع تصاویر حداکثر ۸۰۰ KB</p>
       </InputRow>
+
+      <div className="flex flex-wrap items-center gap-3 text-[10px] text-gray-500">
+        <span>تعداد کاراکتر تیتر: {headlinePreview.length} / ۲۰۰</span>
+        <span>تعداد کاراکتر متن: {bodyPreview.length}</span>
+        <button type="button" onClick={() => setShowPreview((value) => !value)} className="rounded border border-gray-300 px-3 py-1 text-sky-700 hover:bg-sky-50">
+          {showPreview ? 'بستن پیش‌نمایش' : 'پیش‌نمایش خبر'}
+        </button>
+      </div>
+      {showPreview && <section className="rounded-lg border border-gray-200 bg-gray-50 p-4" aria-label="پیش‌نمایش خبر">
+        <h3 className="text-base font-bold text-gray-900">{headlinePreview || 'تیتر خبر'}</h3>
+        {subHeadlinePreview && <p className="mt-2 text-sm text-gray-600">{subHeadlinePreview}</p>}
+        <hr className="my-3 border-gray-200" />
+        <p className="whitespace-pre-wrap text-sm leading-7 text-gray-800">{bodyPreview || 'متن خبر'}</p>
+      </section>}
 
       <MessageBox message={state?.errors?.message} />
 
