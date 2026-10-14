@@ -3,6 +3,7 @@
 import 'server-only'
 import { mkdir, unlink, writeFile } from 'fs/promises'
 import path from 'path'
+import { savePrivatePaymentReceipt, deletePrivatePaymentReceipt } from '@/app/db/paymentReceiptsDb'
 
 const STORE_IMAGES_DIR = path.join(process.cwd(), 'public', 'storeImages')
 
@@ -36,6 +37,11 @@ export async function saveStoreImage(file: File, kind: StoreImageKind, storeId: 
 
   const stored = `${kind}_${storeId}_${Date.now()}${ext}`
 
+  if (kind === 'receipt') {
+    await savePrivatePaymentReceipt(file, stored, 'store', storeId)
+    return stored
+  }
+
   await mkdir(STORE_IMAGES_DIR, { recursive: true })
   const buffer = Buffer.from(await file.arrayBuffer())
   await writeFile(path.join(STORE_IMAGES_DIR, stored), buffer)
@@ -48,6 +54,10 @@ export async function deleteStoreImage(filename: string | null | undefined): Pro
 
   const safeName = path.basename(filename)
   const fullPath = path.join(STORE_IMAGES_DIR, safeName)
+
+  if (ext === '.pdf' || safeName.startsWith('receipt_')) {
+    await deletePrivatePaymentReceipt(safeName)
+  }
 
   try {
     await unlink(fullPath)
