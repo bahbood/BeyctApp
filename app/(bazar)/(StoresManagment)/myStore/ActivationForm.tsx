@@ -55,7 +55,7 @@ export default function ActivationForm({ store, onDone }: { store: Store; onDone
           )}
           {store.payment_receipt && (
             <a
-              href={`/storeImages/${store.payment_receipt}`}
+              href={`/api/payment-receipts/${encodeURIComponent(store.payment_receipt)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-[10px] text-amber-700 underline"
