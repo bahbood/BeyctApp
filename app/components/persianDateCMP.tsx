@@ -55,6 +55,13 @@ export function PersianDateCMP({
     return jalaaliMonthLength(Number(year), Number(month))
   }, [year, month])
 
+  const clear = () => {
+    setYear('')
+    setMonth('')
+    setDay('')
+    onChange?.('')
+  }
+
   const updateParts = (nextYear: string, nextMonth: string, nextDay: string) => {
     let safeDay = nextDay
     if (nextYear && nextMonth && safeDay) {
@@ -76,13 +83,6 @@ export function PersianDateCMP({
     }
 
     onChange?.(`${nextYear}/${pad(nextMonth)}/${pad(safeDay)}`)
-  }
-
-  const clear = () => {
-    setYear('')
-    setMonth('')
-    setDay('')
-    onChange?.('')
   }
 
   return (
