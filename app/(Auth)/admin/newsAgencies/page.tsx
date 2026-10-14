@@ -169,7 +169,7 @@ export default async function AdminNewsAgenciesPage({
 
                     {agency.payment_receipt ? (
                       <a
-                        href={newsAgencyImageUrl(agency.payment_receipt)}
+                        href={`/api/payment-receipts/${encodeURIComponent(agency.payment_receipt)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-[10px] text-sky-700 underline font-semibold"
