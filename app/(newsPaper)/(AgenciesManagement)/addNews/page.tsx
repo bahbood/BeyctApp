@@ -23,9 +23,9 @@ export default async function AddNewsPage() {
             <Link href="/myNewsAgency" className="text-sm text-gray-500 hover:text-gray-700">
               خبرگزاری من
             </Link>
-            <Link href="/" className="text-sm text-gray-500 hover:text-gray-700">
+            {/* <Link href="/" className="text-sm text-gray-500 hover:text-gray-700">
               خانه
-            </Link>
+            </Link> */}
           </div>
         </div>
       </header>
