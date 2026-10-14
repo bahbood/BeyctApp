@@ -9,6 +9,9 @@ export const NEWS_IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
 /** حداکثر حجم هر تصویر خبر: ۲۰۰ کیلوبایت */
 export const MAX_FILE_SIZE = 200 * 1024
 
+/** سقف مجموع حجم تصاویر ارسالی در یک بار ثبت/ویرایش */
+export const MAX_TOTAL_IMAGE_SIZE = 800 * 1024
+
 /** حداکثر تعداد تصویر برای هر خبر */
 export const MAX_IMAGES_PER_NEWS = 5
 
