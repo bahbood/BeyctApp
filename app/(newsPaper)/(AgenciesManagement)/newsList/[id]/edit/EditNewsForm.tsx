@@ -5,11 +5,10 @@
 import { useActionState, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { PersianDateCMP } from '@/app/components/persianDateCMP'
-import { toJalaaliInput } from '@/app/lib/jalaliDate'
 import { editNewsAction, type NewsFormState } from '../../../action/newsAction'
 import { InputRow, MessageBox, fieldClass } from '../../../myNewsAgency/FormFields'
 import { MAX_IMAGES_PER_NEWS } from '../../../lib/newsImagesConfig'
-import { newsImageUrl } from '../../../lib/newsImagesDb'
+import { newsImageUrl } from '../../../lib/newsImagesConfig'
 
 type ExistingImage = {
   id: number
@@ -46,10 +45,6 @@ export default function EditNewsForm({ initialData, canPublish }: {
   useEffect(() => {
     if (state?.success) router.push('/newsList')
   }, [state, router])
-
-  const removedCount = typeof document === 'undefined'
-    ? 0
-    : document.querySelectorAll('input[name="remove_image_ids"]:checked').length
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
