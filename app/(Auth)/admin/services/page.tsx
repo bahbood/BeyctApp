@@ -182,7 +182,7 @@ export default async function AdminServicesPage({ searchParams }: { searchParams
 
                     {service.payment_receipt ? (
                       <a
-                        href={serviceImageUrl(service.payment_receipt)}
+                        href={`/api/payment-receipts/${encodeURIComponent(service.payment_receipt)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-[10px] text-sky-700 underline font-semibold"
