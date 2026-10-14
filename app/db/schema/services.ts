@@ -40,7 +40,7 @@ export const services = pgTable(
 
     office_address: varchar('office_address', { length: 250 }).notNull(),
 
-    // بنر اختیاری : نام فایل ذخیره شده در public/serviceImages
+    // بنر عمومی در public/serviceImages؛ رسید بانکی در payment_receipts و به‌صورت خصوصی نگهداری می‌شود
     banner: varchar('banner', { length: 255 }),
 
     category_id: integer('category_id')
