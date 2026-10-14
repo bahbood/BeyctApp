@@ -134,7 +134,7 @@ export default function AddNewsForm({ canPublish = true }: { canPublish?: boolea
           />
         </InputRow>
 
-        <InputRow label="تاریخ بایگانی (شمسی)" error={state?.errors?.archive_at}>
+        <InputRow label="تاریخ بایگانی (شمسی، اختیاری؛ خالی = بدون بایگانی)" error={state?.errors?.archive_at}>
           <PersianDateCMP
             name="archive_at"
             value={archiveAt}
