@@ -91,6 +91,12 @@ export default async function NewsListPage({
                     )}
                   </div>
                   <div className="flex items-center gap-2">
+                    <Link
+                      href={`/newsList/${item.id}/edit`}
+                      className="rounded border border-sky-200 px-2 py-1 text-[10px] text-sky-700 hover:bg-sky-50"
+                    >
+                      ویرایش
+                    </Link>
                     <DeleteNewsButton newsId={item.id} />
                   </div>
                 </div>
