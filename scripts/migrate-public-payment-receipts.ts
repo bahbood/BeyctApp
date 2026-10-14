@@ -5,7 +5,7 @@
 import 'dotenv/config'
 import { access, readFile, unlink } from 'node:fs/promises'
 import path from 'node:path'
-import { and, eq } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { db } from '../app/db'
 import { newsAgencies, stores, services, paymentReceipts } from '../app/db/schema'
 
