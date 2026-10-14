@@ -21,7 +21,7 @@ export const stores = pgTable('stores', {
   store_desc:   varchar('store_desc', { length: 200 }).notNull(),
   store_about:  text('store_about'),
 
-  // تصاویر فروشگاه : نام فایل ذخیره شده در public/storeImages
+  // لوگو و بنر عمومی در public/storeImages؛ رسید بانکی در payment_receipts و به‌صورت خصوصی نگهداری می‌شود
   store_logo:         varchar('store_logo', { length: 255 }),
   store_header_banner:varchar('store_header_banner', { length: 255 }),
 
