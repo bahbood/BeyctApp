@@ -372,14 +372,22 @@ export async function editNewsAction(
     console.error('Edit news error:', error)
     if (databaseCommitted) return { success: true }
     for (const name of savedImageNames) await deleteNewsImageFile(name)
-    if (error instanceof NewsImageError) return { success: false, errors: { images: error.message } }
+    const submittedValues = {
+      headline, sub_headline, body,
+      published_at: published_at_input,
+      archive_at: archive_at_input,
+      news_category, news_source, reporter,
+    }
+    if (error instanceof NewsImageError) {
+      return { success: false, errors: { images: error.message }, values: submittedValues }
+    }
     if (error instanceof Error && error.message === 'NEWS_CONFLICT') {
-      return { success: false, errors: { message: 'خبر هم‌زمان در جای دیگری تغییر کرده است. صفحه را تازه‌سازی کنید و دوباره تلاش کنید.' } }
+      return { success: false, errors: { message: 'خبر هم‌زمان در جای دیگری تغییر کرده است. صفحه را تازه‌سازی کنید و دوباره تلاش کنید.' }, values: submittedValues }
     }
     if (error instanceof Error && error.message === 'NEWS_NOT_FOUND') {
-      return { success: false, errors: { message: 'خبر یافت نشد یا اجازه ویرایش آن را ندارید' } }
+      return { success: false, errors: { message: 'خبر یافت نشد یا اجازه ویرایش آن را ندارید' }, values: submittedValues }
     }
-    return { success: false, errors: { message: 'خطا در ویرایش خبر' } }
+    return { success: false, errors: { message: 'خطا در ویرایش خبر؛ جزئیات خطا در گزارش سرور ثبت شده است.' }, values: submittedValues }
   }
 }
 
