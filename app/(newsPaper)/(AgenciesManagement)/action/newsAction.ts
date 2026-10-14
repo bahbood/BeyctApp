@@ -402,7 +402,7 @@ export async function toggleNewsOnAirAction(newsId: number): Promise<NewsToggleS
   // شرط مالکیت داخل خود UPDATE است تا بررسی-سپس-نوشتن (TOCTOU) حذف شود
   const updated = await db
     .update(news)
-    .set({ on_air: nextValue })
+    .set({ on_air: nextValue, updated_at: new Date() })
     .where(and(eq(news.id, newsId), eq(news.news_agency_id, agency.id)))
     .returning({ id: news.id })
 
@@ -429,7 +429,7 @@ export async function toggleNewsBreakingAction(newsId: number): Promise<NewsTogg
 
   const updated = await db
     .update(news)
-    .set({ is_breaking: !row.is_breaking })
+    .set({ is_breaking: !row.is_breaking, updated_at: new Date() })
     .where(and(eq(news.id, newsId), eq(news.news_agency_id, agency.id)))
     .returning({ id: news.id })
 
@@ -456,7 +456,7 @@ export async function toggleNewsCommentsAction(newsId: number): Promise<NewsTogg
 
   const updated = await db
     .update(news)
-    .set({ comments_enabled: !row.comments_enabled })
+    .set({ comments_enabled: !row.comments_enabled, updated_at: new Date() })
     .where(and(eq(news.id, newsId), eq(news.news_agency_id, agency.id)))
     .returning({ id: news.id })
 
