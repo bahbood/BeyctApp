@@ -108,10 +108,10 @@ export default function EditNewsForm({ initialData, canPublish }: {
 
       <div className="grid gap-3 sm:grid-cols-2">
         <InputRow label="تاریخ انتشار (شمسی)" error={state?.errors?.published_at}>
-          <PersianDateCMP name="published_at" value={publishedAt} onChange={setPublishedAt} className={fieldClass} />
+          <PersianDateCMP name="published_at" value={state && !state.success ? (state.values?.published_at ?? publishedAt) : publishedAt} onChange={setPublishedAt} className={fieldClass} />
         </InputRow>
         <InputRow label="تاریخ بایگانی (شمسی، اختیاری؛ خالی = بدون بایگانی)" error={state?.errors?.archive_at}>
-          <PersianDateCMP name="archive_at" value={archiveAt} onChange={setArchiveAt} className={fieldClass} />
+          <PersianDateCMP name="archive_at" value={state && !state.success ? (state.values?.archive_at ?? archiveAt) : archiveAt} onChange={setArchiveAt} className={fieldClass} />
         </InputRow>
       </div>
 
