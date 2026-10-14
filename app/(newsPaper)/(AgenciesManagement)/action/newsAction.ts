@@ -5,7 +5,7 @@
 import { getUserFromSession } from '@/app/(Auth)/lib/session'
 import { db } from '@/app/db'
 import { news, newsImages, newsLikes } from '@/app/db/schema'
-import { and, count, eq } from 'drizzle-orm'
+import { and, count, eq, inArray } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
 import { jalaaliInputToDate } from '@/app/lib/jalaliDate'
 import {
@@ -176,6 +176,165 @@ export async function createNewsAction(
     console.error('Create news error:', error)
     if (error instanceof NewsImageError) return { success: false, errors: { images: error.message } }
     return { success: false, errors: { message: 'خطا در ثبت خبر' } }
+  }
+}
+
+
+export async function editNewsAction(
+  newsId: number,
+  prevState: NewsFormState,
+  formData: FormData,
+): Promise<NewsFormState> {
+  const userinfo = await getUserFromSession()
+  const userId = userinfo?.id
+  if (!userId) return { success: false, errors: { message: 'نشست نامعتبر است' } }
+
+  const agency = await getNewsAgencyByUserId(userId)
+  if (!agency) return { success: false, errors: { message: 'دسترسی مجاز نیست' } }
+
+  const [current] = await db
+    .select()
+    .from(news)
+    .where(and(eq(news.id, newsId), eq(news.news_agency_id, agency.id)))
+    .limit(1)
+
+  if (!current) return { success: false, errors: { message: 'خبر یافت نشد یا اجازه ویرایش آن را ندارید' } }
+
+  const headline = ((formData.get('headline') as string) || '').trim()
+  const sub_headline = ((formData.get('sub_headline') as string) || '').trim()
+  const body = ((formData.get('body') as string) || '').trim()
+  const published_at_input = ((formData.get('published_at') as string) || '').trim()
+  const archive_at_input = ((formData.get('archive_at') as string) || '').trim()
+  const news_category = ((formData.get('news_category') as string) || '').trim()
+  const news_source = ((formData.get('news_source') as string) || '').trim()
+  const reporter = ((formData.get('reporter') as string) || '').trim()
+  const requestedOnAir = formData.get('on_air') === 'on'
+  const is_breaking = formData.get('is_breaking') === 'on'
+  const comments_enabled = formData.get('comments_enabled') === 'on'
+  const errors: NonNullable<NewsFormState>['errors'] = {}
+
+  if (headline.length < 1) errors.headline = 'تیتر خبر الزامی است'
+  if (headline.length > 200) errors.headline = 'تیتر خبر حداکثر ۲۰۰ کاراکتر'
+  if (sub_headline.length > 200) errors.sub_headline = 'زیرتیتر خبر حداکثر ۲۰۰ کاراکتر'
+  if (body.length < 1) errors.body = 'متن خبر الزامی است'
+  if (news_category.length > 50) errors.news_category = 'دسته‌بندی حداکثر ۵۰ کاراکتر'
+  if (news_source.length > 100) errors.news_source = 'منبع خبر حداکثر ۱۰۰ کاراکتر'
+  if (reporter.length > 150) errors.reporter = 'نام خبرنگار حداکثر ۱۵۰ کاراکتر'
+
+  const publishedAt = published_at_input ? jalaaliInputToDate(published_at_input) : current.published_at
+  if (published_at_input && !publishedAt) errors.published_at = 'تاریخ انتشار نامعتبر است (YYYY/MM/DD)'
+  const archiveAt = archive_at_input ? jalaaliInputToDate(archive_at_input) : null
+  if (archive_at_input && !archiveAt) errors.archive_at = 'تاریخ بایگانی نامعتبر است (YYYY/MM/DD)'
+
+  const imageFiles: (File | null)[] = []
+  for (let i = 0; i < MAX_IMAGES_PER_NEWS; i++) {
+    imageFiles.push(formData.get(`images_${i}`) as File | null)
+  }
+
+  const allImages = await db
+    .select({ id: newsImages.id, image_name: newsImages.image_name, position: newsImages.position })
+    .from(newsImages)
+    .where(eq(newsImages.news_id, newsId))
+    .orderBy(newsImages.position)
+
+  const requestedRemovalIds = [...new Set(
+    formData.getAll('remove_image_ids')
+      .map((value) => Number(value))
+      .filter((value) => Number.isInteger(value) && value > 0),
+  )]
+  const removableImages = allImages.filter((image) => requestedRemovalIds.includes(image.id))
+  if (removableImages.length !== requestedRemovalIds.length) {
+    errors.images = 'فهرست تصاویر برای حذف معتبر نیست'
+  }
+
+  const remainingCount = allImages.length - removableImages.length
+  const imgErr = validateImages(imageFiles, remainingCount)
+  if (imgErr) errors.images = imgErr
+
+  // خبر موجودی که از قبل منتشر بوده قابل ویرایش است؛ ولی اشتراک نامعتبر نباید
+  // امکان روشن کردن انتشار برای خبری که خاموش بوده را ایجاد کند.
+  if (requestedOnAir && !current.on_air && !isNewsAgencyPublishable(agency)) {
+    errors.message = 'خبرگزاری شما در وضعیت انتشار مجاز نیست؛ ابتدا وضعیت اشتراک را بررسی کنید.'
+  }
+
+  if (Object.keys(errors).length > 0) {
+    return {
+      success: false,
+      errors,
+      values: {
+        headline, sub_headline, body,
+        published_at: published_at_input,
+        archive_at: archive_at_input,
+        news_category, news_source, reporter,
+      },
+    }
+  }
+
+  const finalOnAir = current.on_air ? requestedOnAir : requestedOnAir && isNewsAgencyPublishable(agency)
+  const savedImageNames: string[] = []
+
+  try {
+    for (const file of imageFiles) {
+      if (file && file.size > 0) savedImageNames.push(await saveNewsImage(file, userId))
+    }
+
+    const removedIds = removableImages.map((image) => image.id)
+    const usedPositions = new Set(
+      allImages.filter((image) => !removedIds.includes(image.id)).map((image) => image.position),
+    )
+    const freePositions = Array.from({ length: MAX_IMAGES_PER_NEWS }, (_, index) => index)
+      .filter((position) => !usedPositions.has(position))
+
+    await db.transaction(async (tx) => {
+      const updated = await tx
+        .update(news)
+        .set({
+          headline,
+          sub_headline: sub_headline || null,
+          body,
+          news_category: news_category || null,
+          news_source: news_source || null,
+          reporter: reporter || null,
+          published_at: publishedAt ?? current.published_at,
+          archive_at: archiveAt,
+          on_air: finalOnAir,
+          is_breaking,
+          comments_enabled,
+          updated_at: new Date(),
+        })
+        .where(and(eq(news.id, newsId), eq(news.news_agency_id, agency.id)))
+        .returning({ id: news.id })
+
+      if (updated.length === 0) throw new Error('NEWS_NOT_FOUND')
+
+      if (removedIds.length > 0) {
+        await tx.delete(newsImages).where(
+          and(eq(newsImages.news_id, newsId), inArray(newsImages.id, removedIds)),
+        )
+      }
+
+      for (let index = 0; index < savedImageNames.length; index++) {
+        await tx.insert(newsImages).values({
+          image_name: savedImageNames[index],
+          position: freePositions[index],
+          news_id: newsId,
+        })
+      }
+    })
+
+    for (const image of removableImages) await deleteNewsImageFile(image.image_name)
+
+    revalidateNewsPaths()
+    revalidatePath(`/news/${newsId}`)
+    return { success: true }
+  } catch (error) {
+    console.error('Edit news error:', error)
+    for (const name of savedImageNames) await deleteNewsImageFile(name)
+    if (error instanceof NewsImageError) return { success: false, errors: { images: error.message } }
+    if (error instanceof Error && error.message === 'NEWS_NOT_FOUND') {
+      return { success: false, errors: { message: 'خبر یافت نشد یا اجازه ویرایش آن را ندارید' } }
+    }
+    return { success: false, errors: { message: 'خطا در ویرایش خبر' } }
   }
 }
 
