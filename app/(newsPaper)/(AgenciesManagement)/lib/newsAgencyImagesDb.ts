@@ -6,6 +6,7 @@ import 'server-only'
 import { mkdir, unlink, writeFile, access } from 'fs/promises'
 import { constants } from 'fs'
 import path from 'path'
+import { savePrivatePaymentReceipt, deletePrivatePaymentReceipt } from '@/app/db/paymentReceiptsDb'
 import { randomInt } from 'crypto'
 import { jalaaliStamp } from '@/app/lib/jalaliDate'
 import {
@@ -95,6 +96,11 @@ export async function saveNewsAgencyImage(
     throw new NewsAgencyImageError('تولید نام فایل تصویر ناموفق بود')
   }
 
+  if (kind === 'receipt') {
+    await savePrivatePaymentReceipt(file, stored, 'news-agency', agencyId)
+    return stored
+  }
+
   await mkdir(NEWS_AGENCY_IMAGES_DIR, { recursive: true })
   const buffer = Buffer.from(await file.arrayBuffer())
   await writeFile(path.join(NEWS_AGENCY_IMAGES_DIR, stored), buffer)
@@ -109,6 +115,10 @@ export async function deleteNewsAgencyImageFile(filename: string | null | undefi
   const safeName = path.basename(filename)
   const ext = path.extname(safeName).toLowerCase()
   if (![...IMAGE_EXTENSIONS, ...RECEIPT_EXTENSIONS].includes(ext)) return
+
+  if (ext === '.pdf' || safeName.startsWith('receipt_')) {
+    await deletePrivatePaymentReceipt(safeName)
+  }
 
   try {
     await unlink(path.join(NEWS_AGENCY_IMAGES_DIR, safeName))
