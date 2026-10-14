@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react'
 import useEmblaCarousel from 'embla-carousel-react'
 import Image from "next/image";
 import Autoplay from 'embla-carousel-autoplay';
+import { newsImageUrl } from '@/app/(newsPaper)/(AgenciesManagement)/lib/newsImagesConfig';
 
 import {
   NextButton,
@@ -53,7 +54,7 @@ export function NewsCarousel({ className, images }: { className: string; images:
             <div className="embla__slide flex justify-center items-center  flex-none w-full  h-full  relative bg-gray-200/60 " key={index}>
               
               <Image
-                src={`/newsImages/newsIMGs/${img}`}
+                src={newsImageUrl(img)}
                 alt={img}
                 fill
       sizes="(max-width: 768px) 100vw, 200px"

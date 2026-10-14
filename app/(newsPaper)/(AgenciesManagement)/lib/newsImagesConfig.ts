@@ -1,8 +1,8 @@
 // app/(newsPaper)/(AgenciesManagement)/lib/newsImagesConfig.ts
 // ثابت‌ها و کمک‌تابع‌های امن برای استفاده در کامپوننت‌های کلاینت (بدون server-only و بدون fs)
 
-/** مسیر عمومی تصاویر خبر در public/newsImages/newsIMGs */
 export const NEWS_IMAGES_PUBLIC_PREFIX = '/newsImages/newsIMGs'
+export const NEWS_IMAGES_OBJECT_PREFIX = '/api/news-images'
 
 export const NEWS_IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
 
@@ -23,15 +23,22 @@ export function newsImageSizeLabel(bytes: number): string {
 
 const baseName = (name: string) => name.split(/[\\/]/).pop() ?? ''
 
-/** مسیر عمومی تصویر برای نمایش در مرورگر */
+/** نام‌های s3: به API امن سمت سرور هدایت می‌شوند؛ نام‌های قدیمی از مسیر public می‌مانند. */
 export function newsImageUrl(filename: string | null | undefined): string {
   if (!filename) return ''
-  return `${NEWS_IMAGES_PUBLIC_PREFIX}/${encodeURIComponent(baseName(filename))}`
+  const name = baseName(filename)
+
+  if (name.startsWith('s3:')) {
+    const key = name.slice(3)
+    return `${NEWS_IMAGES_OBJECT_PREFIX}/${encodeURIComponent(key)}`
+  }
+
+  return `${NEWS_IMAGES_PUBLIC_PREFIX}/${encodeURIComponent(name)}`
 }
 
 /** اعتبارسنجی نام فایل ارسالی از فرم (جلوگیری از path traversal) */
 export function isSafeNewsImageName(filename: string): boolean {
-  if (!filename || filename.includes('/') || filename.includes('\\')) return false
+  if (!filename || filename !== baseName(filename) || filename.includes('/') || filename.includes('\\')) return false
   const dot = filename.lastIndexOf('.')
   const ext = dot > 0 ? filename.slice(dot).toLowerCase() : ''
   return NEWS_IMAGE_EXTENSIONS.includes(ext)

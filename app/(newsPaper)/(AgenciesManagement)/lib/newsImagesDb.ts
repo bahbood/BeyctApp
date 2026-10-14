@@ -1,6 +1,5 @@
 // app/(newsPaper)/(AgenciesManagement)/lib/newsImagesDb.ts
-// ذخیره‌سازی تصاویر خبر در public/newsImages/newsIMGs
-// الگوی نام فایل: {userId}_{تاریخ شمسی}_{کد یکتا} — مثال: 10_14050331_a56bcd8e9
+// خبرهای جدید در Neon Object Storage ذخیره می‌شوند؛ نام‌های قدیمی همچنان از public خوانده می‌شوند.
 
 import 'server-only'
 import { mkdir, unlink, writeFile, access } from 'fs/promises'
@@ -17,12 +16,24 @@ import {
   newsImageUrl,
   isSafeNewsImageName,
 } from './newsImagesConfig'
+import {
+  deleteNewsObject,
+  isNewsObjectStorageConfigured,
+  putNewsObject,
+} from './newsObjectStorage'
 
 const NEWS_IMAGES_DIR = path.join(process.cwd(), 'public', 'newsImages', 'newsIMGs')
 
 export { MAX_FILE_SIZE, MAX_IMAGES_PER_NEWS, MAX_TOTAL_IMAGE_SIZE, newsImageUrl, isSafeNewsImageName }
 
 const ALLOWED_EXTENSIONS = NEWS_IMAGE_EXTENSIONS
+const CONTENT_TYPES: Record<string, string> = {
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.png': 'image/png',
+  '.gif': 'image/gif',
+  '.webp': 'image/webp',
+}
 
 const CODE_ALPHABET = 'abcdefghijklmnopqrstuvwxyz0123456789'
 const CODE_LENGTH = 9
@@ -49,7 +60,7 @@ async function fileExists(fullPath: string): Promise<boolean> {
 
 /**
  * ساخت نام فایل یکتا بر اساس شناسه کاربر، تاریخ شمسی و کد تصادفی.
- * در صورت تکراری بودن نام، کد دوباره ساخته می‌شود.
+ * در فضای ابری احتمال برخورد بسیار پایین است؛ برای فایل‌های محلی هم نام بررسی می‌شود.
  */
 export async function buildNewsImageName(userId: number, ext: string): Promise<string> {
   const stamp = jalaaliStamp()
@@ -64,7 +75,7 @@ export async function buildNewsImageName(userId: number, ext: string): Promise<s
   throw new NewsImageError('تولید نام فایل تصویر ناموفق بود')
 }
 
-/** ذخیره یک تصویر و بازگرداندن نام فایل ذخیره شده */
+/** ذخیره تصویر در Neon Object Storage و بازگرداندن نام ذخیره‌سازی‌شده */
 export async function saveNewsImage(file: File, userId: number): Promise<string> {
   const ext = path.extname(file.name).toLowerCase()
 
@@ -117,16 +128,46 @@ export async function saveNewsImage(file: File, userId: number): Promise<string>
   if (!actualFormat || actualFormat !== expectedFormat[ext]) {
     throw new NewsImageError('محتوای فایل با پسوند تصویر مطابقت ندارد یا فایل تصویر معتبر نیست')
   }
+
   const stored = await buildNewsImageName(userId, ext)
+  const storageConfigured = isNewsObjectStorageConfigured()
+
+  // در Vercel هرگز به نوشتن روی فایل‌سیستم فقط‌خواندنی برنمی‌گردیم.
+  if (process.env.VERCEL === '1' && !storageConfigured) {
+    throw new NewsImageError('تنظیمات Neon Object Storage در محیط سرور کامل نیست')
+  }
+
+  if (storageConfigured) {
+    try {
+      await putNewsObject(stored, buffer, CONTENT_TYPES[ext])
+      // پیشوند s3: محل نگهداری فایل را بدون تغییر ساختار دیتابیس مشخص می‌کند.
+      return `s3:${stored}`
+    } catch (error) {
+      console.error('saveNewsImage Object Storage error:', error)
+      throw new NewsImageError('ذخیره تصویر در فضای ذخیره‌سازی ناموفق بود؛ تنظیمات Neon را بررسی کنید')
+    }
+  }
+
+  // فقط برای توسعه محلی بدون تنظیم Object Storage.
   await mkdir(NEWS_IMAGES_DIR, { recursive: true })
   await writeFile(path.join(NEWS_IMAGES_DIR, stored), buffer, { flag: 'wx' })
-
   return stored
 }
 
-/** حذف فایل تصویر از دیسک */
+/** حذف تصویر از فضای ابری یا از پوشه قدیمی local */
 export async function deleteNewsImageFile(filename: string | null | undefined): Promise<void> {
   if (!filename) return
+
+  if (filename.startsWith('s3:')) {
+    const key = filename.slice(3)
+    if (!isSafeNewsImageName(key)) return
+    try {
+      await deleteNewsObject(key)
+    } catch (error) {
+      console.error('deleteNewsImageFile Object Storage error:', error)
+    }
+    return
+  }
 
   const safeName = path.basename(filename)
   if (!ALLOWED_EXTENSIONS.includes(path.extname(safeName).toLowerCase())) return
@@ -134,6 +175,7 @@ export async function deleteNewsImageFile(filename: string | null | undefined): 
   try {
     await unlink(path.join(NEWS_IMAGES_DIR, safeName))
   } catch (error) {
-    console.error('deleteNewsImageFile error:', error)
+    // فایل‌های قدیمی داخل public در زمان اجرای Vercel قابل حذف نیستند.
+    console.error('deleteNewsImageFile local file error:', error)
   }
 }
