@@ -11,7 +11,7 @@ export default function NewsLayout({ children }: { children: React.ReactNode }) 
             </div>
             
           </div>
-  <div id="L" className="min-h-screen "> {children} </div>
+  <div id="L" className="min-h-screen container "> {children} </div>
   </div>
 )
 }
