@@ -7,8 +7,7 @@ import { useRouter } from 'next/navigation'
 import { PersianDateCMP } from '@/app/components/persianDateCMP'
 import { editNewsAction, type NewsFormState } from '../../../action/newsAction'
 import { InputRow, MessageBox, fieldClass } from '../../../myNewsAgency/FormFields'
-import { MAX_IMAGES_PER_NEWS } from '../../../lib/newsImagesConfig'
-import { newsImageUrl } from '../../../lib/newsImagesConfig'
+import { MAX_IMAGES_PER_NEWS, newsImageUrl } from '../../../lib/newsImagesConfig'
 
 type ExistingImage = {
   id: number
@@ -105,7 +104,7 @@ export default function EditNewsForm({ initialData, canPublish }: {
       </div>
 
       {initialData.images.length > 0 && (
-        <InputRow label="تصاویر فعلی — برای حذف، تیک تصویر را بزنید" error={state?.errors?.images}>
+        <InputRow label="تصاویر فعلی — برای حذف، تیک تصویر را بزنید">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
             {initialData.images.map((image) => (
               <label key={image.id} className="flex flex-col gap-2 rounded border border-gray-200 p-2 text-[10px]">
