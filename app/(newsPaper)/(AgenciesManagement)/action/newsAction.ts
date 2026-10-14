@@ -12,6 +12,7 @@ import {
   deleteNewsImageFile,
   MAX_FILE_SIZE,
   MAX_IMAGES_PER_NEWS,
+  MAX_TOTAL_IMAGE_SIZE,
   saveNewsImage,
   NewsImageError,
 } from '../lib/newsImagesDb'
@@ -64,11 +65,22 @@ function revalidateNewsPaths() {
 
 const MAX_FILE_SIZE_KB = Math.round(MAX_FILE_SIZE / 1024)
 
+function dateDayValue(date: Date): number {
+  const day = new Date(date)
+  day.setHours(0, 0, 0, 0)
+  return day.getTime()
+}
+
 function validateImages(images: (File | null)[], existingCount = 0): string | null {
   let total = existingCount
+  let totalBytes = 0
   for (const file of images) {
     if (file && file.size > 0) {
       total++
+      totalBytes += file.size
+      if (totalBytes > MAX_TOTAL_IMAGE_SIZE) {
+        return `حجم مجموع تصاویر ارسالی بیش از حد مجاز است. حداکثر: ${Math.round(MAX_TOTAL_IMAGE_SIZE / 1024)} KB`
+      }
       if (total > MAX_IMAGES_PER_NEWS) {
         return `حداکثر ${MAX_IMAGES_PER_NEWS} تصویر برای هر خبر مجاز است`
       }
@@ -126,6 +138,9 @@ export async function createNewsAction(
   if (published_at_input && !publishedAt) errors.published_at = 'تاریخ انتشار نامعتبر است (YYYY/MM/DD)'
   const archiveAt = archive_at_input ? jalaaliInputToDate(archive_at_input) : null
   if (archive_at_input && !archiveAt) errors.archive_at = 'تاریخ بایگانی نامعتبر است (YYYY/MM/DD)'
+  if (archiveAt && publishedAt && dateDayValue(archiveAt) < dateDayValue(publishedAt)) {
+    errors.archive_at = 'تاریخ بایگانی نمی‌تواند قبل از تاریخ انتشار باشد'
+  }
   const imageFiles: (File | null)[] = []
   for (let i = 0; i < MAX_IMAGES_PER_NEWS; i++) {
     imageFiles.push(formData.get(`images_${i}`) as File | null)
@@ -136,44 +151,49 @@ export async function createNewsAction(
     return { success: false, errors, values: { headline, sub_headline, body, published_at: published_at_input, archive_at: archive_at_input, news_category, news_source, reporter } }
   }
 
-  const savedImageNames: string[] = []
+  const savedImages: { name: string; position: number }[] = []
 
   try {
-    const [newRow] = await db.insert(news).values({
-      headline,
-      sub_headline: sub_headline || null,
-      body,
-      news_category: news_category || null,
-      news_source: news_source || null,
-      reporter: reporter || null,
-      on_air,
-      is_breaking,
-      comments_enabled,
-      published_at: publishedAt ?? new Date(),
-      archive_at: archiveAt,
-      news_agency_id: agency.id,
-    }).returning({ id: news.id })
-
-    try {
-      for (let i = 0; i < imageFiles.length; i++) {
-        const file = imageFiles[i]
-        if (file && file.size > 0) {
-          const name = await saveNewsImage(file, userId)
-          savedImageNames.push(name)
-          await db.insert(newsImages).values({ image_name: name, position: i, news_id: newRow.id })
-        }
+    // ابتدا فایل‌ها ذخیره و اعتبارسنجی می‌شوند؛ سپس خبر و رکوردهای تصاویر در یک تراکنش ثبت می‌شوند.
+    for (let i = 0; i < imageFiles.length; i++) {
+      const file = imageFiles[i]
+      if (file && file.size > 0) {
+        savedImages.push({ name: await saveNewsImage(file, userId), position: i })
       }
-    } catch (imageError) {
-      // ثبت خبر باید یا کامل انجام شود یا کاملا برگشت بخورد — فایل های نیمه کاره پاک می شوند
-      await db.delete(news).where(eq(news.id, newRow.id))
-      for (const name of savedImageNames) await deleteNewsImageFile(name)
-      throw imageError
     }
+
+    await db.transaction(async (tx) => {
+      const [newRow] = await tx.insert(news).values({
+        headline,
+        sub_headline: sub_headline || null,
+        body,
+        news_category: news_category || null,
+        news_source: news_source || null,
+        reporter: reporter || null,
+        on_air,
+        is_breaking,
+        comments_enabled,
+        published_at: publishedAt ?? new Date(),
+        archive_at: archiveAt,
+        news_agency_id: agency.id,
+      }).returning({ id: news.id })
+
+      if (savedImages.length > 0) {
+        await tx.insert(newsImages).values(
+          savedImages.map(({ name, position }) => ({
+            image_name: name,
+            position,
+            news_id: newRow.id,
+          })),
+        )
+      }
+    })
 
     revalidateNewsPaths()
     return { success: true }
   } catch (error) {
     console.error('Create news error:', error)
+    for (const image of savedImages) await deleteNewsImageFile(image.name)
     if (error instanceof NewsImageError) return { success: false, errors: { images: error.message } }
     return { success: false, errors: { message: 'خطا در ثبت خبر' } }
   }
@@ -208,6 +228,8 @@ export async function editNewsAction(
   const news_category = ((formData.get('news_category') as string) || '').trim()
   const news_source = ((formData.get('news_source') as string) || '').trim()
   const reporter = ((formData.get('reporter') as string) || '').trim()
+  const expectedUpdatedAtInput = ((formData.get('expected_updated_at') as string) || '').trim()
+  const expectedUpdatedAt = expectedUpdatedAtInput ? new Date(expectedUpdatedAtInput) : null
   const requestedOnAir = formData.get('on_air') === 'on'
   const is_breaking = formData.get('is_breaking') === 'on'
   const comments_enabled = formData.get('comments_enabled') === 'on'
@@ -225,6 +247,16 @@ export async function editNewsAction(
   if (published_at_input && !publishedAt) errors.published_at = 'تاریخ انتشار نامعتبر است (YYYY/MM/DD)'
   const archiveAt = archive_at_input ? jalaaliInputToDate(archive_at_input) : null
   if (archive_at_input && !archiveAt) errors.archive_at = 'تاریخ بایگانی نامعتبر است (YYYY/MM/DD)'
+  if (archiveAt && publishedAt && dateDayValue(archiveAt) < dateDayValue(publishedAt)) {
+    errors.archive_at = 'تاریخ بایگانی نمی‌تواند قبل از تاریخ انتشار باشد'
+  }
+  if (
+    !expectedUpdatedAt ||
+    Number.isNaN(expectedUpdatedAt.getTime()) ||
+    expectedUpdatedAt.getTime() !== current.updated_at.getTime()
+  ) {
+    errors.message = 'این خبر پس از باز شدن فرم تغییر کرده است. صفحه را تازه‌سازی کنید و تغییرات را دوباره اعمال کنید.'
+  }
 
   const imageFiles: (File | null)[] = []
   for (let i = 0; i < MAX_IMAGES_PER_NEWS; i++) {
@@ -302,10 +334,14 @@ export async function editNewsAction(
           comments_enabled,
           updated_at: new Date(),
         })
-        .where(and(eq(news.id, newsId), eq(news.news_agency_id, agency.id)))
+        .where(and(
+          eq(news.id, newsId),
+          eq(news.news_agency_id, agency.id),
+          eq(news.updated_at, current.updated_at),
+        ))
         .returning({ id: news.id })
 
-      if (updated.length === 0) throw new Error('NEWS_NOT_FOUND')
+      if (updated.length === 0) throw new Error('NEWS_CONFLICT')
 
       if (removedIds.length > 0) {
         await tx.delete(newsImages).where(
@@ -331,6 +367,9 @@ export async function editNewsAction(
     console.error('Edit news error:', error)
     for (const name of savedImageNames) await deleteNewsImageFile(name)
     if (error instanceof NewsImageError) return { success: false, errors: { images: error.message } }
+    if (error instanceof Error && error.message === 'NEWS_CONFLICT') {
+      return { success: false, errors: { message: 'خبر هم‌زمان در جای دیگری تغییر کرده است. صفحه را تازه‌سازی کنید و دوباره تلاش کنید.' } }
+    }
     if (error instanceof Error && error.message === 'NEWS_NOT_FOUND') {
       return { success: false, errors: { message: 'خبر یافت نشد یا اجازه ویرایش آن را ندارید' } }
     }
