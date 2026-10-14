@@ -83,7 +83,7 @@ async function signedRequest(
   const canonicalHeaders =
     `host:${url.host.toLowerCase()}\n` +
     `x-amz-content-sha256:${payloadHash}\n` +
-    `x-amz-date:${amzDate}`
+    `x-amz-date:${amzDate}\n`
   const canonicalRequest = [
     method,
     url.pathname,
