@@ -26,7 +26,7 @@ export const newsAgencies = pgTable(
     // اطلاعات کلی خبرگزاری (در صفحه پروفایل نمایش داده می شود)
     news_agency_about: text('news_agency_about'),
 
-    // تصاویر خبرگزاری : نام فایل ذخیره شده در public/newsAgencyImages
+    // لوگو و بنر عمومی در public/newsAgencyImages؛ رسید بانکی در payment_receipts و به‌صورت خصوصی نگهداری می‌شود
     news_agency_logo:         varchar('news_agency_logo', { length: 255 }),
     news_agency_header_banner: varchar('news_agency_header_banner', { length: 255 }),
 
