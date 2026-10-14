@@ -110,7 +110,7 @@ export default function EditNewsForm({ initialData, canPublish }: {
         <InputRow label="تاریخ انتشار (شمسی)" error={state?.errors?.published_at}>
           <PersianDateCMP name="published_at" value={publishedAt} onChange={setPublishedAt} className={fieldClass} />
         </InputRow>
-        <InputRow label="تاریخ بایگانی (شمسی)" error={state?.errors?.archive_at}>
+        <InputRow label="تاریخ بایگانی (شمسی، اختیاری؛ خالی = بدون بایگانی)" error={state?.errors?.archive_at}>
           <PersianDateCMP name="archive_at" value={archiveAt} onChange={setArchiveAt} className={fieldClass} />
         </InputRow>
       </div>
