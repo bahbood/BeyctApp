@@ -62,6 +62,7 @@ export default async function EditNewsPage({
             canPublish={canPublish}
             initialData={{
               id: item.id,
+              updated_at: item.updated_at.toISOString(),
               headline: item.headline,
               sub_headline: item.sub_headline ?? '',
               body: item.body,
