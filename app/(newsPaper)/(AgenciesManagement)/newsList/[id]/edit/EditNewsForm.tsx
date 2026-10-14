@@ -2,7 +2,7 @@
 
 'use client'
 
-import { useActionState, useEffect, useState } from 'react'
+import { useActionState, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { PersianDateCMP } from '@/app/components/persianDateCMP'
 import { editNewsAction, type NewsFormState } from '../../../action/newsAction'
@@ -47,6 +47,8 @@ export default function EditNewsForm({ initialData, canPublish }: {
   const [showPreview, setShowPreview] = useState(false)
   const [isDirty, setIsDirty] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [imagePreviews, setImagePreviews] = useState<string[]>([])
+  const imagePreviewUrls = useRef<string[]>([])
 
   useEffect(() => {
     if (state?.success) {
@@ -54,6 +56,10 @@ export default function EditNewsForm({ initialData, canPublish }: {
       router.push('/newsList')
     }
   }, [state, router])
+
+  useEffect(() => () => {
+    for (const url of imagePreviewUrls.current) if (url) URL.revokeObjectURL(url)
+  }, [])
 
   useEffect(() => {
     if (!isDirty || saved) return
@@ -143,7 +149,23 @@ export default function EditNewsForm({ initialData, canPublish }: {
 
       <InputRow label={`افزودن تصویر (حداکثر ${MAX_IMAGES_PER_NEWS} تصویر در مجموع، هر کدام حداکثر ۲۰۰ KB)`} error={state?.errors?.images}>
         {Array.from({ length: MAX_IMAGES_PER_NEWS }).map((_, index) => (
-          <input key={index} type="file" name={`images_${index}`} accept="image/jpeg,image/png,image/jpg,image/webp,image/gif" className={fieldClass} />
+          <div key={index} className="flex flex-col gap-1">
+            <input
+              type="file"
+              name={`images_${index}`}
+              accept="image/jpeg,image/png,image/jpg,image/webp,image/gif"
+              className={fieldClass}
+              onChange={(event) => {
+                const previous = imagePreviewUrls.current[index]
+                if (previous) URL.revokeObjectURL(previous)
+                const file = event.target.files?.[0]
+                const nextUrl = file ? URL.createObjectURL(file) : ''
+                imagePreviewUrls.current[index] = nextUrl
+                setImagePreviews([...imagePreviewUrls.current])
+              }}
+            />
+            {imagePreviews[index] && <img src={imagePreviews[index]} alt={`پیش‌نمایش تصویر ${index + 1}`} className="h-20 w-20 rounded border border-gray-200 object-cover" />}
+          </div>
         ))}
         <p className="text-[10px] text-gray-500">فرمت‌های مجاز: JPG, PNG, WEBP, GIF — هر تصویر حداکثر ۲۰۰ KB و مجموع تصاویر ارسالی حداکثر ۸۰۰ KB. تصاویر قبلی تا زمانی که حذفشان را انتخاب نکنید حفظ می‌شوند.</p>
       </InputRow>
