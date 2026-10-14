@@ -6,7 +6,6 @@ import 'server-only'
 import { mkdir, unlink, writeFile, access } from 'fs/promises'
 import { constants } from 'fs'
 import path from 'path'
-import sharp from 'sharp'
 import { randomInt } from 'crypto'
 import { jalaaliStamp } from '@/app/lib/jalaliDate'
 import {
@@ -79,7 +78,7 @@ export async function saveNewsImage(file: File, userId: number): Promise<string>
     throw new NewsImageError(`حجم فایل بیش از حد مجاز است. حداکثر: ${sizeLabel(MAX_FILE_SIZE)}`)
   }
 
-  const inputBuffer = Buffer.from(await file.arrayBuffer())
+  const buffer = Buffer.from(await file.arrayBuffer())
   const expectedFormat: Record<string, string> = {
     '.jpg': 'jpeg',
     '.jpeg': 'jpeg',
@@ -88,37 +87,36 @@ export async function saveNewsImage(file: File, userId: number): Promise<string>
     '.webp': 'webp',
   }
 
-  let buffer: Buffer
-  try {
-    const image = sharp(inputBuffer, {
-      animated: ext === '.gif',
-      limitInputPixels: 40_000_000,
-      failOn: 'error',
-    })
-    const metadata = await image.metadata()
-    if (!metadata.format || metadata.format !== expectedFormat[ext]) {
-      throw new NewsImageError('محتوای فایل با پسوند تصویر مطابقت ندارد')
-    }
-    if (!metadata.width || !metadata.height || metadata.width * metadata.height > 40_000_000) {
-      throw new NewsImageError('ابعاد تصویر بیش از حد مجاز است')
-    }
-
-    // بازخوانی/رمزگشایی واقعی تصویر؛ برای فرمت‌های غیر GIF، چرخش EXIF اعمال و metadata حذف می‌شود.
-    if (ext === '.gif') {
-      await image.stats()
-      buffer = inputBuffer
-    } else {
-      const processed = await image.rotate().toBuffer()
-      if (processed.length > MAX_FILE_SIZE) {
-        throw new NewsImageError('حجم تصویر پس از پردازش بیش از حد مجاز است؛ تصویر کوچک‌تری انتخاب کنید')
-      }
-      buffer = processed
-    }
-  } catch (error) {
-    if (error instanceof NewsImageError) throw error
-    throw new NewsImageError('فایل انتخاب‌شده تصویر معتبر یا قابل پردازش نیست')
+  // بررسی امضای واقعی فایل؛ MIME و پسوند ارسالی کاربر به‌تنهایی قابل اعتماد نیستند.
+  let actualFormat: string | null = null
+  if (
+    buffer.length >= 3 &&
+    buffer[0] === 0xff &&
+    buffer[1] === 0xd8 &&
+    buffer[2] === 0xff
+  ) {
+    actualFormat = 'jpeg'
+  } else if (
+    buffer.length >= 8 &&
+    buffer.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))
+  ) {
+    actualFormat = 'png'
+  } else if (
+    buffer.length >= 6 &&
+    (buffer.toString('ascii', 0, 6) === 'GIF87a' || buffer.toString('ascii', 0, 6) === 'GIF89a')
+  ) {
+    actualFormat = 'gif'
+  } else if (
+    buffer.length >= 12 &&
+    buffer.toString('ascii', 0, 4) === 'RIFF' &&
+    buffer.toString('ascii', 8, 12) === 'WEBP'
+  ) {
+    actualFormat = 'webp'
   }
 
+  if (!actualFormat || actualFormat !== expectedFormat[ext]) {
+    throw new NewsImageError('محتوای فایل با پسوند تصویر مطابقت ندارد یا فایل تصویر معتبر نیست')
+  }
   const stored = await buildNewsImageName(userId, ext)
   await mkdir(NEWS_IMAGES_DIR, { recursive: true })
   await writeFile(path.join(NEWS_IMAGES_DIR, stored), buffer, { flag: 'wx' })
