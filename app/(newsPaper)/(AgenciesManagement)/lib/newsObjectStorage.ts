@@ -59,7 +59,7 @@ export function isNewsObjectStorageConfigured(): boolean {
 
 function objectUrl(config: StorageConfig, key: string): URL {
   const url = new URL(config.endpoint.toString())
-  const basePath = url.pathname.replace(/\\/+$/, '')
+  const basePath = url.pathname.replace(/\/+$/, '')
   const encodedKey = key.split('/').map(awsEncode).join('/')
   url.pathname = `${basePath}/${awsEncode(config.bucket)}/${encodedKey}`
   url.search = ''
@@ -76,13 +76,13 @@ async function signedRequest(
   const config = getStorageConfig()
   const url = objectUrl(config, key)
   const now = new Date()
-  const amzDate = now.toISOString().replace(/[:-]|\\.\\d{3}/g, '')
+  const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, '')
   const dateStamp = amzDate.slice(0, 8)
   const payloadHash = sha256(body ?? new Uint8Array())
   const signedHeaders = 'host;x-amz-content-sha256;x-amz-date'
   const canonicalHeaders =
-    `host:${url.host.toLowerCase()}\\n` +
-    `x-amz-content-sha256:${payloadHash}\\n` +
+    `host:${url.host.toLowerCase()}\n` +
+    `x-amz-content-sha256:${payloadHash}\n` +
     `x-amz-date:${amzDate}`
   const canonicalRequest = [
     method,
@@ -91,14 +91,14 @@ async function signedRequest(
     canonicalHeaders,
     signedHeaders,
     payloadHash,
-  ].join('\\n')
+  ].join('\n')
   const scope = `${dateStamp}/${config.region}/s3/aws4_request`
   const stringToSign = [
     'AWS4-HMAC-SHA256',
     amzDate,
     scope,
     sha256(canonicalRequest),
-  ].join('\\n')
+  ].join('\n')
 
   const dateKey = hmac(`AWS4${config.secretAccessKey}`, dateStamp)
   const regionKey = hmac(dateKey, config.region)
