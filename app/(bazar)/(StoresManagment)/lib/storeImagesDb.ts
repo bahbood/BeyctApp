@@ -53,6 +53,7 @@ export async function deleteStoreImage(filename: string | null | undefined): Pro
   if (!filename) return
 
   const safeName = path.basename(filename)
+  const ext = path.extname(safeName).toLowerCase()
   const fullPath = path.join(STORE_IMAGES_DIR, safeName)
 
   if (ext === '.pdf' || safeName.startsWith('receipt_')) {
