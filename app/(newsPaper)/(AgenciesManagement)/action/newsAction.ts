@@ -152,6 +152,7 @@ export async function createNewsAction(
   }
 
   const savedImages: { name: string; position: number }[] = []
+  let databaseCommitted = false
 
   try {
     // ابتدا فایل‌ها ذخیره و اعتبارسنجی می‌شوند؛ سپس خبر و رکوردهای تصاویر در یک تراکنش ثبت می‌شوند.
@@ -188,11 +189,13 @@ export async function createNewsAction(
         )
       }
     })
+    databaseCommitted = true
 
     revalidateNewsPaths()
     return { success: true }
   } catch (error) {
     console.error('Create news error:', error)
+    if (databaseCommitted) return { success: true }
     for (const image of savedImages) await deleteNewsImageFile(image.name)
     if (error instanceof NewsImageError) return { success: false, errors: { images: error.message } }
     return { success: false, errors: { message: 'خطا در ثبت خبر' } }
@@ -304,6 +307,7 @@ export async function editNewsAction(
 
   const finalOnAir = current.on_air ? requestedOnAir : requestedOnAir && isNewsAgencyPublishable(agency)
   const savedImageNames: string[] = []
+  let databaseCommitted = false
 
   try {
     for (const file of imageFiles) {
@@ -357,6 +361,7 @@ export async function editNewsAction(
         })
       }
     })
+    databaseCommitted = true
 
     for (const image of removableImages) await deleteNewsImageFile(image.image_name)
 
@@ -365,6 +370,7 @@ export async function editNewsAction(
     return { success: true }
   } catch (error) {
     console.error('Edit news error:', error)
+    if (databaseCommitted) return { success: true }
     for (const name of savedImageNames) await deleteNewsImageFile(name)
     if (error instanceof NewsImageError) return { success: false, errors: { images: error.message } }
     if (error instanceof Error && error.message === 'NEWS_CONFLICT') {
