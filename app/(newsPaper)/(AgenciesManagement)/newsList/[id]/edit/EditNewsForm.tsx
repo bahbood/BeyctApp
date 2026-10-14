@@ -29,6 +29,7 @@ export type EditNewsInitialData = {
   is_breaking: boolean
   comments_enabled: boolean
   images: ExistingImage[]
+  updated_at: string
 }
 
 export default function EditNewsForm({ initialData, canPublish }: {
@@ -40,13 +41,33 @@ export default function EditNewsForm({ initialData, canPublish }: {
   const router = useRouter()
   const [publishedAt, setPublishedAt] = useState(initialData.published_at)
   const [archiveAt, setArchiveAt] = useState(initialData.archive_at)
+  const [headlinePreview, setHeadlinePreview] = useState(initialData.headline)
+  const [subHeadlinePreview, setSubHeadlinePreview] = useState(initialData.sub_headline)
+  const [bodyPreview, setBodyPreview] = useState(initialData.body)
+  const [showPreview, setShowPreview] = useState(false)
+  const [isDirty, setIsDirty] = useState(false)
+  const [saved, setSaved] = useState(false)
 
   useEffect(() => {
-    if (state?.success) router.push('/newsList')
+    if (state?.success) {
+      setSaved(true)
+      router.push('/newsList')
+    }
   }, [state, router])
 
+  useEffect(() => {
+    if (!isDirty || saved) return
+    const warnBeforeLeave = (event: BeforeUnloadEvent) => {
+      event.preventDefault()
+      event.returnValue = ''
+    }
+    window.addEventListener('beforeunload', warnBeforeLeave)
+    return () => window.removeEventListener('beforeunload', warnBeforeLeave)
+  }, [isDirty, saved])
+
   return (
-    <form action={formAction} className="flex flex-col gap-4">
+    <form action={formAction} onChange={() => setIsDirty(true)} className="flex flex-col gap-4">
+      <input type="hidden" name="expected_updated_at" value={initialData.updated_at} />
       <h2 className="text-sm font-bold text-gray-800">ویرایش خبر</h2>
 
       {!canPublish && (
@@ -56,15 +77,15 @@ export default function EditNewsForm({ initialData, canPublish }: {
       )}
 
       <InputRow label="تیتر خبر" error={state?.errors?.headline}>
-        <input name="headline" type="text" maxLength={200} className={fieldClass} required defaultValue={state?.values?.headline ?? initialData.headline} />
+        <input name="headline" type="text" maxLength={200} className={fieldClass} required defaultValue={state?.values?.headline ?? initialData.headline} onChange={(event) => setHeadlinePreview(event.target.value)} />
       </InputRow>
 
       <InputRow label="زیرتیتر خبر" error={state?.errors?.sub_headline}>
-        <input name="sub_headline" type="text" maxLength={200} className={fieldClass} defaultValue={state?.values?.sub_headline ?? initialData.sub_headline} />
+        <input name="sub_headline" type="text" maxLength={200} className={fieldClass} defaultValue={state?.values?.sub_headline ?? initialData.sub_headline} onChange={(event) => setSubHeadlinePreview(event.target.value)} />
       </InputRow>
 
       <InputRow label="متن خبر" error={state?.errors?.body}>
-        <textarea name="body" rows={10} className={fieldClass} required defaultValue={state?.values?.body ?? initialData.body} />
+        <textarea name="body" rows={10} className={fieldClass} required defaultValue={state?.values?.body ?? initialData.body} onChange={(event) => setBodyPreview(event.target.value)} />
       </InputRow>
 
       <div className="grid gap-3 sm:grid-cols-2">
@@ -90,7 +111,7 @@ export default function EditNewsForm({ initialData, canPublish }: {
 
       <div className="grid gap-2 sm:grid-cols-3 text-xs">
         <label className="flex items-center gap-2">
-          <input type="checkbox" name="on_air" defaultChecked={initialData.on_air} />
+          <input type="checkbox" name="on_air" defaultChecked={initialData.on_air} disabled={!canPublish && !initialData.on_air} />
           <span>نمایش در سایت</span>
         </label>
         <label className="flex items-center gap-2">
@@ -124,8 +145,22 @@ export default function EditNewsForm({ initialData, canPublish }: {
         {Array.from({ length: MAX_IMAGES_PER_NEWS }).map((_, index) => (
           <input key={index} type="file" name={`images_${index}`} accept="image/jpeg,image/png,image/jpg,image/webp,image/gif" className={fieldClass} />
         ))}
-        <p className="text-[10px] text-gray-500">فرمت‌های مجاز: JPG, PNG, WEBP, GIF — تصاویر قبلی تا زمانی که حذفشان را انتخاب نکنید حفظ می‌شوند.</p>
+        <p className="text-[10px] text-gray-500">فرمت‌های مجاز: JPG, PNG, WEBP, GIF — هر تصویر حداکثر ۲۰۰ KB و مجموع تصاویر ارسالی حداکثر ۸۰۰ KB. تصاویر قبلی تا زمانی که حذفشان را انتخاب نکنید حفظ می‌شوند.</p>
       </InputRow>
+
+      <div className="flex flex-wrap items-center gap-3 text-[10px] text-gray-500">
+        <span>تعداد کاراکتر تیتر: {headlinePreview.length} / ۲۰۰</span>
+        <span>تعداد کاراکتر متن: {bodyPreview.length}</span>
+        <button type="button" onClick={() => setShowPreview((value) => !value)} className="rounded border border-gray-300 px-3 py-1 text-sky-700 hover:bg-sky-50">
+          {showPreview ? 'بستن پیش‌نمایش' : 'پیش‌نمایش خبر'}
+        </button>
+      </div>
+      {showPreview && <section className="rounded-lg border border-gray-200 bg-gray-50 p-4" aria-label="پیش‌نمایش خبر">
+        <h3 className="text-base font-bold text-gray-900">{headlinePreview || 'تیتر خبر'}</h3>
+        {subHeadlinePreview && <p className="mt-2 text-sm text-gray-600">{subHeadlinePreview}</p>}
+        <hr className="my-3 border-gray-200" />
+        <p className="whitespace-pre-wrap text-sm leading-7 text-gray-800">{bodyPreview || 'متن خبر'}</p>
+      </section>}
 
       <MessageBox message={state?.errors?.message} />
 
