@@ -6,6 +6,7 @@ import 'server-only'
 import { mkdir, unlink, writeFile, access } from 'fs/promises'
 import { constants } from 'fs'
 import path from 'path'
+import { savePrivatePaymentReceipt, deletePrivatePaymentReceipt } from '@/app/db/paymentReceiptsDb'
 import { randomInt } from 'crypto'
 import { jalaaliStamp } from '@/app/lib/jalaliDate'
 import {
@@ -77,6 +78,11 @@ export async function saveServiceImage(file: File, kind: ServiceImageKind, servi
     throw new ServiceImageError('تولید نام فایل تصویر ناموفق بود')
   }
 
+  if (kind === 'receipt') {
+    await savePrivatePaymentReceipt(file, stored, 'service', serviceId)
+    return stored
+  }
+
   await mkdir(SERVICE_IMAGES_DIR, { recursive: true })
   const buffer = Buffer.from(await file.arrayBuffer())
   await writeFile(path.join(SERVICE_IMAGES_DIR, stored), buffer)
@@ -91,6 +97,10 @@ export async function deleteServiceImageFile(filename: string | null | undefined
   const safeName = path.basename(filename)
   const ext = path.extname(safeName).toLowerCase()
   if (![...SERVICE_IMAGE_EXTENSIONS, ...SERVICE_RECEIPT_EXTENSIONS].includes(ext)) return
+
+  if (ext === '.pdf' || safeName.startsWith('receipt_')) {
+    await deletePrivatePaymentReceipt(safeName)
+  }
 
   try {
     await unlink(path.join(SERVICE_IMAGES_DIR, safeName))
