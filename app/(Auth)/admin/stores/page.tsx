@@ -165,7 +165,7 @@ export default async function AdminStoresPage({
 
                     {store.payment_receipt ? (
                       <a
-                        href={`/storeImages/${store.payment_receipt}`}
+                        href={`/api/payment-receipts/${encodeURIComponent(store.payment_receipt)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-[10px] text-sky-700 underline font-semibold"
