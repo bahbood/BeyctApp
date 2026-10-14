@@ -190,7 +190,12 @@ export default function EditNewsForm({ initialData, canPublish }: {
         <button type="submit" disabled={isPending} className="mt-2 rounded-md bg-sky-600 px-6 py-2 text-xs text-white hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-50">
           {isPending ? 'در حال ذخیره...' : 'ذخیره تغییرات'}
         </button>
-        <button type="button" onClick={() => router.push('/newsList')} className="mt-2 rounded-md border border-gray-300 px-6 py-2 text-xs text-gray-700 hover:bg-gray-50">
+        <button type="button" onClick={() => {
+            if (!isDirty || window.confirm('تغییرات ذخیره نشده‌اند. بدون ذخیره خارج می‌شوید؟')) {
+              setSaved(true)
+              router.push('/newsList')
+            }
+          }} className="mt-2 rounded-md border border-gray-300 px-6 py-2 text-xs text-gray-700 hover:bg-gray-50">
           انصراف
         </button>
       </div>
