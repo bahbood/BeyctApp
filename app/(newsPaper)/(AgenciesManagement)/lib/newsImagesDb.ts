@@ -13,6 +13,7 @@ import {
   NEWS_IMAGE_EXTENSIONS,
   MAX_FILE_SIZE,
   MAX_IMAGES_PER_NEWS,
+  MAX_TOTAL_IMAGE_SIZE,
   newsImageSizeLabel as sizeLabel,
   newsImageUrl,
   isSafeNewsImageName,
@@ -20,7 +21,7 @@ import {
 
 const NEWS_IMAGES_DIR = path.join(process.cwd(), 'public', 'newsImages', 'newsIMGs')
 
-export { MAX_FILE_SIZE, MAX_IMAGES_PER_NEWS, newsImageUrl, isSafeNewsImageName }
+export { MAX_FILE_SIZE, MAX_IMAGES_PER_NEWS, MAX_TOTAL_IMAGE_SIZE, newsImageUrl, isSafeNewsImageName }
 
 const ALLOWED_EXTENSIONS = NEWS_IMAGE_EXTENSIONS
 
