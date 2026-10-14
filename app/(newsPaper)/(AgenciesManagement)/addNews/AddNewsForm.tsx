@@ -2,7 +2,7 @@
 
 'use client'
 
-import { useEffect, useState, useActionState } from 'react'
+import { useEffect, useRef, useState, useActionState } from 'react'
 import { createNewsAction, type NewsFormState } from '../action/newsAction'
 import { InputRow, MessageBox, fieldClass } from '../myNewsAgency/FormFields'
 import { PersianDateCMP } from '@/app/components/persianDateCMP'
@@ -24,6 +24,8 @@ export default function AddNewsForm({ canPublish = true }: { canPublish?: boolea
   const [showPreview, setShowPreview] = useState(false)
   const [isDirty, setIsDirty] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [imagePreviews, setImagePreviews] = useState<string[]>([])
+  const imagePreviewUrls = useRef<string[]>([])
 
   useEffect(() => {
     if (state?.success) {
@@ -31,6 +33,10 @@ export default function AddNewsForm({ canPublish = true }: { canPublish?: boolea
       router.push('/newsList')
     }
   }, [state, router])
+
+  useEffect(() => () => {
+    for (const url of imagePreviewUrls.current) if (url) URL.revokeObjectURL(url)
+  }, [])
 
   useEffect(() => {
     if (!isDirty || saved) return
@@ -155,13 +161,23 @@ export default function AddNewsForm({ canPublish = true }: { canPublish?: boolea
 
       <InputRow label={`تصاویر (حداکثر ${MAX_IMAGES_PER_NEWS} تصویر، هر کدام حداکثر ۲۰۰ KB)`} error={state?.errors?.images}>
         {Array.from({ length: MAX_IMAGES_PER_NEWS }).map((_, i) => (
-          <input
-            key={i}
-            type="file"
-            name={`images_${i}`}
-            accept="image/jpeg,image/png,image/jpg,image/webp,image/gif"
-            className={fieldClass}
-          />
+          <div key={i} className="flex flex-col gap-1">
+            <input
+              type="file"
+              name={`images_${i}`}
+              accept="image/jpeg,image/png,image/jpg,image/webp,image/gif"
+              className={fieldClass}
+              onChange={(event) => {
+                const previous = imagePreviewUrls.current[i]
+                if (previous) URL.revokeObjectURL(previous)
+                const file = event.target.files?.[0]
+                const nextUrl = file ? URL.createObjectURL(file) : ''
+                imagePreviewUrls.current[i] = nextUrl
+                setImagePreviews([...imagePreviewUrls.current])
+              }}
+            />
+            {imagePreviews[i] && <img src={imagePreviews[i]} alt={`پیش‌نمایش تصویر ${i + 1}`} className="h-20 w-20 rounded border border-gray-200 object-cover" />}
+          </div>
         ))}
         <p className="text-[10px] text-gray-500">فرمت‌های مجاز: JPG, PNG, WEBP, GIF — هر تصویر حداکثر ۲۰۰ KB و مجموع تصاویر حداکثر ۸۰۰ KB</p>
       </InputRow>
