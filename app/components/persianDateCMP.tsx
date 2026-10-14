@@ -59,7 +59,11 @@ export function PersianDateCMP({
     let safeDay = nextDay
     if (nextYear && nextMonth && safeDay) {
       const max = jalaaliMonthLength(Number(nextYear), Number(nextMonth))
-      if (Number(safeDay) > max) safeDay = ''
+      if (Number(safeDay) > max) {
+        // جلوگیری از باقی ماندن تاریخ قبلی در hidden input پس از تغییر ماه/سال.
+        clear()
+        return
+      }
     }
 
     setYear(nextYear)
@@ -68,7 +72,6 @@ export function PersianDateCMP({
 
     if (!nextYear || !nextMonth || !safeDay) {
       // انتخاب ناقص فقط در draft باقی می‌ماند؛ hidden input تا تکمیل تاریخ خالی می‌ماند.
-      if (!nextYear && !nextMonth && !safeDay) onChange?.('')
       return
     }
 
@@ -92,7 +95,7 @@ export function PersianDateCMP({
           required={required}
           aria-label="روز"
           className="min-w-0 flex-1 rounded-md border border-gray-300 px-2 py-2 text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
-          onChange={(event) => updateParts(year, month, event.target.value)}
+          onChange={(event) => event.target.value ? updateParts(year, month, event.target.value) : clear()}
         >
           <option value="">روز</option>
           {Array.from({ length: maxDay }).map((_, i) => {
@@ -107,7 +110,7 @@ export function PersianDateCMP({
           required={required}
           aria-label="ماه"
           className="min-w-0 flex-1 rounded-md border border-gray-300 px-2 py-2 text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
-          onChange={(event) => updateParts(year, event.target.value, day)}
+          onChange={(event) => event.target.value ? updateParts(year, event.target.value, day) : clear()}
         >
           <option value="">ماه</option>
           {MONTHS.map((label, index) => (
@@ -121,7 +124,7 @@ export function PersianDateCMP({
           required={required}
           aria-label="سال"
           className="min-w-0 flex-1 rounded-md border border-gray-300 px-2 py-2 text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
-          onChange={(event) => updateParts(event.target.value, month, day)}
+          onChange={(event) => event.target.value ? updateParts(event.target.value, month, day) : clear()}
         >
           <option value="">سال</option>
           {years.map((y) => <option key={y} value={String(y)}>{faNumber.format(y)}</option>)}
